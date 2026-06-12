@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>三國・起龍</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23b3322a'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23efe3c8' font-family='serif'>三</text></svg>">
+<style>
+  :root {
+    --ink: #16120c;
+    --paper: #efe3c8;
+    --paper-dark: #e2d2ae;
+    --gold: #d4a536;
+    --red: #b3322a;
+    --panel: rgba(20, 16, 10, 0.92);
+    --panel-edge: #6b5328;
+    --text: #f0e6d2;
+    --muted: #a89a7c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0d0b07; }
+  body {
+    font-family: "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
+    color: var(--text);
+    user-select: none;
+  }
+  #app { position: relative; width: 100vw; height: 100vh; }
+  #game { position: absolute; top: 46px; left: 0; right: 340px; bottom: 0; }
+  #game canvas { image-rendering: pixelated; }
+
+  /* ---------- generic ---------- */
+  .hidden { display: none !important; }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--panel-edge);
+    background: linear-gradient(180deg, #3a2f1b, #261e10);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all .12s;
+  }
+  button:hover:not(:disabled) { border-color: var(--gold); color: #ffe9b0; background: linear-gradient(180deg, #4a3c22, #2e2514); }
+  button:disabled { opacity: .42; cursor: default; }
+  button.primary { background: linear-gradient(180deg, #8c2722, #5e1713); border-color: #c2553f; }
+  button.primary:hover:not(:disabled) { background: linear-gradient(180deg, #a93129, #6e1b16); border-color: #ff9b6a; }
+  .zh { font-family: "Noto Serif TC", "PMingLiU", serif; }
+
+  /* ---------- top bar ---------- */
+  #topbar {
+    position: absolute; top: 0; left: 0; right: 0; height: 46px;
+    display: flex; align-items: center; gap: 18px; padding: 0 16px;
+    background: linear-gradient(180deg, rgba(14,11,6,.97), rgba(14,11,6,.88));
+    border-bottom: 1px solid var(--panel-edge);
+    z-index: 20; font-size: 13px;
+  }
+  #topbar .logo { font-weight: 700; letter-spacing: 2px; color: var(--gold); font-size: 15px; }
+  #topbar .stat { display: flex; align-items: center; gap: 6px; color: var(--text); }
+  #topbar .stat .ico { font-size: 15px; }
+  #topbar .stat b { color: #ffe9b0; font-variant-numeric: tabular-nums; }
+  #topbar .spacer { flex: 1; }
+  #factionChip { display: flex; align-items: center; gap: 8px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--panel-edge); }
+  #factionChip .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ---------- side panel ---------- */
+  #side {
+    position: absolute; top: 56px; right: 10px; width: 320px; max-height: calc(100vh - 130px);
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px;
+    z-index: 15; display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,.55);
+  }
+  #side header {
+    padding: 10px 14px; border-bottom: 1px solid #3a2f1b;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  #side header h2 { font-size: 17px; color: #ffe9b0; }
+  #side header .sub { font-size: 12px; color: var(--muted); }
+  #sideBody { padding: 10px 14px 14px; overflow-y: auto; font-size: 13px; }
+  #sideBody::-webkit-scrollbar { width: 8px; }
+  #sideBody::-webkit-scrollbar-thumb { background: #3a2f1b; border-radius: 4px; }
+  .statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; margin: 6px 0 10px; }
+  .statgrid .row { display: flex; justify-content: space-between; }
+  .statgrid .row span { color: var(--muted); }
+  .statgrid .row b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .officer-card {
+    display: flex; gap: 10px; align-items: center; padding: 7px 8px; margin: 5px 0;
+    background: rgba(255,255,255,.04); border: 1px solid #3a2f1b; border-radius: 6px;
+  }
+  .officer-card:hover { border-color: var(--gold); }
+  .portrait {
+    width: 42px; height: 42px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: rgba(255,255,255,.92);
+    font-family: "Noto Serif TC", "PMingLiU", serif;
+    border: 1px solid rgba(255,255,255,.25);
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+  }
+  .officer-card .info { flex: 1; min-width: 0; }
+  .officer-card .nm { font-weight: 600; color: #ffe9b0; font-size: 13px; display: flex; gap: 6px; align-items: baseline; }
+  .officer-card .nm .lv { color: var(--gold); font-size: 11px; }
+  .officer-card .st { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .officer-card .badge { font-size: 10px; padding: 1px 6px; border-radius: 8px; background: #3a2f1b; color: #d9c89a; }
+  .tag { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 8px; margin-left: 6px; vertical-align: 1px; }
+
+  /* ---------- log ---------- */
+  #log {
+    position: absolute; left: 10px; bottom: 10px; width: 360px; max-height: 178px;
+    z-index: 14; display: flex; flex-direction: column-reverse; gap: 4px; overflow: hidden;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to top, #000 70%, transparent);
+            mask-image: linear-gradient(to top, #000 70%, transparent);
+  }
+  #log .entry {
+    background: rgba(14,11,6,.85); border-left: 3px solid var(--gold);
+    padding: 5px 10px; font-size: 12px; border-radius: 0 4px 4px 0;
+    animation: slideIn .25s ease;
+  }
+  #log .entry.battle { border-left-color: var(--red); }
+  @keyframes slideIn { from { transform: translateX(-12px); opacity: 0; } }
+
+  /* ---------- modal ---------- */
+  #modalWrap {
+    position: absolute; inset: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(5,4,2,.62); backdrop-filter: blur(2px);
+  }
+  #modal {
+    width: 560px; max-width: 92vw; max-height: 84vh; overflow-y: auto;
+    background: linear-gradient(180deg, #221b0f, #171208);
+    border: 1px solid var(--gold); border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.8);
+    padding: 22px 26px;
+    animation: pop .18s ease;
+  }
+  @keyframes pop { from { transform: scale(.94); opacity: 0; } }
+  #modal h2 { color: var(--gold); font-size: 20px; margin-bottom: 4px; }
+  #modal .mShort { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+  #modal .mBody { font-size: 14px; line-height: 1.6; color: var(--text); white-space: pre-wrap; }
+  #modal .mChoices { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+  #modal .mChoices button { text-align: left; padding: 10px 14px; font-size: 14px; }
+
+  /* ---------- title screen ---------- */
+  #title {
+    position: absolute; inset: 0; z-index: 50;
+    background: radial-gradient(ellipse at 50% 30%, #2a2010 0%, #0d0b07 75%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  }
+  #title .big {
+    font-family: "Noto Serif TC", "PMingLiU", serif;
+    font-size: 96px; color: var(--paper); letter-spacing: 18px; line-height: 1;
+    text-shadow: 0 0 50px rgba(212,165,54,.35), 0 4px 0 #4a3210;
+  }
+  #title .stamp {
+    color: #fff; background: var(--red); font-family: "Noto Serif TC", "PMingLiU", serif;
+    padding: 4px 10px; font-size: 18px; border-radius: 4px; transform: rotate(-4deg);
+    box-shadow: 0 3px 12px rgba(179,50,42,.5); margin-top: -16px;
+  }
+  #title .sub2 { color: var(--muted); letter-spacing: 6px; font-size: 15px; margin: 14px 0 30px; text-transform: uppercase; }
+  #factionPick { display: flex; gap: 16px; }
+  .fcard {
+    width: 196px; padding: 18px 16px; border-radius: 10px; cursor: pointer;
+    background: rgba(255,255,255,.04); border: 1px solid #3a2f1b;
+    text-align: center; transition: all .15s;
+  }
+  .fcard:hover { transform: translateY(-5px); border-color: var(--c, var(--gold)); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  .fcard .fzh { font-family: "Noto Serif TC", "PMingLiU", serif; font-size: 44px; color: var(--c); }
+  .fcard h3 { margin: 8px 0 2px; font-size: 16px; color: #ffe9b0; }
+  .fcard .leader { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .fcard p { font-size: 11.5px; color: #c5b896; line-height: 1.5; }
+  #title .foot { position: absolute; bottom: 14px; color: #6b5f49; font-size: 11px; }
+  #continueRow { margin-top: 26px; }
+
+  /* ---------- battle HUD ---------- */
+  #battleHud {
+    position: absolute; left: calc((100vw - 340px) / 2); bottom: 10px; transform: translateX(-50%);
+    z-index: 16; display: flex; gap: 8px; align-items: center;
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px;
+    padding: 8px 12px;
+  }
+  #battleHud .unitInfo { font-size: 12px; min-width: 210px; }
+  #battleHud .unitInfo b { color: #ffe9b0; }
+  #battleTurn {
+    position: absolute; top: 56px; left: calc((100vw - 340px) / 2); transform: translateX(-50%);
+    z-index: 16; font-size: 13px; letter-spacing: 2px; color: #ffe9b0;
+    background: var(--panel); padding: 5px 18px; border-radius: 20px; border: 1px solid var(--panel-edge);
+  }
+
+  /* ---------- toast banner ---------- */
+  #banner {
+    position: absolute; top: 38%; left: calc((100vw - 340px) / 2); transform: translate(-50%,-50%);
+    z-index: 45; pointer-events: none;
+    font-family: "Noto Serif TC", "PMingLiU", serif; font-size: 54px; color: var(--paper);
+    text-shadow: 0 0 40px rgba(212,165,54,.6), 0 3px 0 #4a3210;
+    letter-spacing: 10px; opacity: 0; transition: opacity .4s;
+  }
+  #banner.show { opacity: 1; }
+
+  /* tooltips */
+  #tip {
+    position: absolute; z-index: 60; pointer-events: none;
+    background: rgba(10,8,4,.95); border: 1px solid var(--gold); border-radius: 6px;
+    padding: 8px 11px; font-size: 12px; max-width: 260px; line-height: 1.5;
+    box-shadow: 0 6px 20px rgba(0,0,0,.6);
+  }
+</style>
+</head>
+<body>
+  <div id="app">
+    <div id="game"></div>
+
+    <div id="topbar" class="hidden">
+      <span class="logo zh">三國・起龍</span>
+      <span class="stat" id="dateStat"><span class="ico">🗓</span><b id="dateVal">190 · Spring</b></span>
+      <span class="stat"><span class="ico">🪙</span><b id="goldVal">0</b></span>
+      <span class="stat"><span class="ico">🌾</span><b id="foodVal">0</b></span>
+      <span class="stat" title="指令點──下達指令時消耗"><span class="ico">⚡</span><b id="cpVal">0</b></span>
+      <span class="spacer"></span>
+      <span id="factionChip"><span class="dot"></span><span id="factionName"></span></span>
+      <button id="saveBtn" title="儲存進度">💾 儲存</button>
+      <button id="endTurnBtn" class="primary">結束回合 ⮕</button>
+    </div>
+
+    <div id="side" class="hidden">
+      <header><h2 id="sideTitle"></h2><span class="sub" id="sideSub"></span></header>
+      <div id="sideBody"></div>
+    </div>
+
+    <div id="log"></div>
+    <div id="battleTurn" class="hidden"></div>
+    <div id="battleHud" class="hidden"></div>
+    <div id="banner"></div>
+    <div id="modalWrap" class="hidden"><div id="modal"></div></div>
+    <div id="tip" class="hidden"></div>
+
+    <div id="title">
+      <div class="big zh">三國</div>
+      <div class="stamp zh">起龍</div>
+      <div class="sub2">亂世群雄 · 天命之爭</div>
+      <div id="factionPick"></div>
+      <div id="continueRow" class="hidden"><button id="continueBtn" class="primary">⟳ 繼續上次的征途</button></div>
+      <div class="foot">三國志策略・角色扮演遊戲 — 美術與音效素材：Kenney.nl（CC0）</div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

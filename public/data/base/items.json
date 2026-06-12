@@ -1,0 +1,7 @@
+[
+  { "id": "seal",       "name": "玉璽",       "zh": "玉璽", "desc": "每回合金錢收入+150。", "stat": "income", "bonus": 150 },
+  { "id": "blade",      "name": "青龍偃月刀", "zh": "青龍偃月刀", "desc": "持有者武力+8。", "stat": "war", "bonus": 8 },
+  { "id": "redhare",    "name": "赤兔馬",     "zh": "赤兔馬", "desc": "持有者戰場移動力+2。", "stat": "move", "bonus": 2 },
+  { "id": "artofwar",   "name": "孫子兵法",   "zh": "孫子兵法", "desc": "持有者智力+8。", "stat": "int", "bonus": 8 },
+  { "id": "steelsword", "name": "倚天劍",     "zh": "倚天劍", "desc": "持有者武力+5。", "stat": "war", "bonus": 5 }
+]

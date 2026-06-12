@@ -1,0 +1,5 @@
+node_modules/
+dist/
+assets_raw/
+.playwright-mcp/
+*.local

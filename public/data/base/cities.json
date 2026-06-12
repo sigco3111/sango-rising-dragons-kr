@@ -1,0 +1,22 @@
+[
+  { "id": "beiping",   "name": "北平",   "zh": "北平", "x": 905,  "y": 92,  "adj": ["ye", "jinyang"], "owner": "gongsun",  "troops": 9000,  "farm": 2, "market": 1, "walls": 2, "capital": true },
+  { "id": "jinyang",   "name": "晉陽",   "zh": "晉陽", "x": 642,  "y": 158, "adj": ["beiping", "ye", "luoyang", "xiliang"], "owner": "neutral", "troops": 5000, "farm": 1, "market": 1, "walls": 1 },
+  { "id": "ye",        "name": "鄴",        "zh": "鄴",   "x": 793,  "y": 205, "adj": ["beiping", "jinyang", "puyang", "luoyang"], "owner": "yuanshao", "troops": 12000, "farm": 3, "market": 2, "walls": 2, "capital": true },
+  { "id": "beihai",    "name": "北海",    "zh": "北海", "x": 985,  "y": 232, "adj": ["puyang", "xiapi"], "owner": "neutral", "troops": 5500, "farm": 2, "market": 2, "walls": 1 },
+  { "id": "puyang",    "name": "濮陽",    "zh": "濮陽", "x": 853,  "y": 286, "adj": ["ye", "beihai", "chenliu", "xiapi"], "owner": "neutral", "troops": 6000, "farm": 2, "market": 1, "walls": 1 },
+  { "id": "xiliang",   "name": "西涼",   "zh": "西涼", "x": 258,  "y": 198, "adj": ["jinyang", "changan"], "owner": "mateng", "troops": 9500, "farm": 1, "market": 1, "walls": 1, "capital": true },
+  { "id": "changan",   "name": "長安",  "zh": "長安", "x": 452,  "y": 305, "adj": ["xiliang", "luoyang", "hanzhong"], "owner": "dong", "troops": 11000, "farm": 2, "market": 2, "walls": 3 },
+  { "id": "luoyang",   "name": "洛陽",   "zh": "洛陽", "x": 620,  "y": 318, "adj": ["changan", "jinyang", "ye", "chenliu", "wan"], "owner": "dong", "troops": 14000, "farm": 2, "market": 3, "walls": 3, "capital": true },
+  { "id": "chenliu",   "name": "陳留",   "zh": "陳留", "x": 762,  "y": 348, "adj": ["luoyang", "puyang", "xuchang"], "owner": "wei", "troops": 8000, "farm": 2, "market": 2, "walls": 1, "capital": true },
+  { "id": "xiapi",     "name": "下邳",     "zh": "下邳", "x": 948,  "y": 360, "adj": ["puyang", "beihai", "shouchun", "xuchang"], "owner": "shu", "troops": 8000, "farm": 2, "market": 2, "walls": 1, "capital": true },
+  { "id": "xuchang",   "name": "許昌",   "zh": "許昌", "x": 742,  "y": 432, "adj": ["chenliu", "xiapi", "wan", "shouchun"], "owner": "neutral", "troops": 6500, "farm": 3, "market": 2, "walls": 1 },
+  { "id": "wan",       "name": "宛",       "zh": "宛",   "x": 610,  "y": 452, "adj": ["luoyang", "xuchang", "xiangyang"], "owner": "yuanshu", "troops": 8500, "farm": 2, "market": 1, "walls": 1 },
+  { "id": "shouchun",  "name": "壽春",  "zh": "壽春", "x": 880,  "y": 470, "adj": ["xuchang", "xiapi", "jianye", "jiangxia"], "owner": "yuanshu", "troops": 10000, "farm": 2, "market": 2, "walls": 2, "capital": true },
+  { "id": "hanzhong",  "name": "漢中",  "zh": "漢中", "x": 392,  "y": 428, "adj": ["changan", "chengdu", "xiangyang"], "owner": "neutral", "troops": 6800, "farm": 2, "market": 1, "walls": 2 },
+  { "id": "xiangyang", "name": "襄陽", "zh": "襄陽", "x": 590,  "y": 548, "adj": ["wan", "hanzhong", "jiangxia", "changsha", "chengdu"], "owner": "liubiao", "troops": 11000, "farm": 3, "market": 2, "walls": 2, "capital": true },
+  { "id": "jiangxia",  "name": "江夏",  "zh": "江夏", "x": 752,  "y": 568, "adj": ["xiangyang", "shouchun", "changsha", "jianye"], "owner": "liubiao", "troops": 7000, "farm": 2, "market": 1, "walls": 1 },
+  { "id": "chengdu",   "name": "成都",   "zh": "成都", "x": 295,  "y": 545, "adj": ["hanzhong", "xiangyang", "changsha"], "owner": "liuzhang", "troops": 10000, "farm": 3, "market": 2, "walls": 2, "capital": true },
+  { "id": "changsha",  "name": "長沙",  "zh": "長沙", "x": 690,  "y": 655, "adj": ["xiangyang", "jiangxia", "chengdu", "wujun"], "owner": "neutral", "troops": 6000, "farm": 2, "market": 2, "walls": 1 },
+  { "id": "jianye",    "name": "建業",    "zh": "建業", "x": 985,  "y": 532, "adj": ["shouchun", "jiangxia", "wujun"], "owner": "wu", "troops": 9000, "farm": 2, "market": 2, "walls": 2, "capital": true },
+  { "id": "wujun",     "name": "吳郡",     "zh": "吳郡", "x": 1068, "y": 612, "adj": ["jianye", "changsha"], "owner": "wu", "troops": 5000, "farm": 2, "market": 2, "walls": 1 }
+]

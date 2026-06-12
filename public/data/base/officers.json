@@ -1,0 +1,61 @@
+[
+  { "id": "caocao",     "name": "曹操",   "zh": "曹操",   "faction": "wei",      "city": "chenliu",  "ldr": 96, "war": 78, "int": 92, "pol": 94, "troop": "cavalry",  "skill": "rally" },
+  { "id": "xiahoudun",  "name": "夏侯惇", "zh": "夏侯惇", "faction": "wei",      "city": "chenliu",  "ldr": 84, "war": 90, "int": 60, "pol": 62, "troop": "infantry", "skill": "duel" },
+  { "id": "xiahouyuan", "name": "夏侯淵", "zh": "夏侯淵", "faction": "wei",      "city": "chenliu",  "ldr": 81, "war": 87, "int": 58, "pol": 52, "troop": "cavalry",  "skill": "charge" },
+  { "id": "caoren",     "name": "曹仁",   "zh": "曹仁",   "faction": "wei",      "city": "chenliu",  "ldr": 86, "war": 82, "int": 64, "pol": 58, "troop": "infantry", "skill": "guard" },
+  { "id": "xunyu",      "name": "荀彧",   "zh": "荀彧",   "faction": "wei",      "city": "chenliu",  "ldr": 62, "war": 30, "int": 95, "pol": 97, "troop": "archer",   "skill": "fire" },
+
+  { "id": "liubei",     "name": "劉備",   "zh": "劉備",   "faction": "shu",      "city": "xiapi",    "ldr": 88, "war": 72, "int": 78, "pol": 86, "troop": "infantry", "skill": "rally" },
+  { "id": "guanyu",     "name": "關羽",   "zh": "關羽",   "faction": "shu",      "city": "xiapi",    "ldr": 95, "war": 97, "int": 75, "pol": 62, "troop": "infantry", "skill": "duel" },
+  { "id": "zhangfei",   "name": "張飛",   "zh": "張飛",   "faction": "shu",      "city": "xiapi",    "ldr": 82, "war": 98, "int": 42, "pol": 35, "troop": "cavalry",  "skill": "charge" },
+  { "id": "jianyong",   "name": "簡雍",   "zh": "簡雍",   "faction": "shu",      "city": "xiapi",    "ldr": 55, "war": 38, "int": 78, "pol": 84, "troop": "archer",   "skill": "volley" },
+
+  { "id": "sunjian",    "name": "孫堅",   "zh": "孫堅",   "faction": "wu",       "city": "jianye",   "ldr": 92, "war": 90, "int": 72, "pol": 70, "troop": "infantry", "skill": "rally" },
+  { "id": "sunce",      "name": "孫策",   "zh": "孫策",   "faction": "wu",       "city": "jianye",   "ldr": 90, "war": 93, "int": 68, "pol": 60, "troop": "cavalry",  "skill": "charge" },
+  { "id": "zhouyu",     "name": "周瑜",   "zh": "周瑜",   "faction": "wu",       "city": "jianye",   "ldr": 94, "war": 66, "int": 96, "pol": 82, "troop": "archer",   "skill": "fire" },
+  { "id": "huanggai",   "name": "黃蓋",   "zh": "黃蓋",   "faction": "wu",       "city": "wujun",    "ldr": 78, "war": 84, "int": 62, "pol": 58, "troop": "infantry", "skill": "guard" },
+  { "id": "chengpu",    "name": "程普",   "zh": "程普",   "faction": "wu",       "city": "wujun",    "ldr": 80, "war": 80, "int": 70, "pol": 64, "troop": "archer",   "skill": "volley" },
+
+  { "id": "dongzhuo",   "name": "董卓",   "zh": "董卓",   "faction": "dong",     "city": "luoyang",  "ldr": 80, "war": 85, "int": 60, "pol": 30, "troop": "cavalry",  "skill": "guard" },
+  { "id": "lubu",       "name": "呂布",   "zh": "呂布",   "faction": "dong",     "city": "luoyang",  "ldr": 88, "war": 100, "int": 32, "pol": 18, "troop": "cavalry", "skill": "duel" },
+  { "id": "huaxiong",   "name": "華雄",   "zh": "華雄",   "faction": "dong",     "city": "luoyang",  "ldr": 76, "war": 86, "int": 48, "pol": 38, "troop": "infantry", "skill": "charge" },
+  { "id": "jiaxu",      "name": "賈詡",   "zh": "賈詡",   "faction": "dong",     "city": "changan",  "ldr": 68, "war": 42, "int": 97, "pol": 84, "troop": "archer",   "skill": "fire" },
+  { "id": "lijue",      "name": "李傕",   "zh": "李傕",   "faction": "dong",     "city": "changan",  "ldr": 70, "war": 76, "int": 50, "pol": 32, "troop": "cavalry",  "skill": "charge" },
+
+  { "id": "yuanshao",   "name": "袁紹",   "zh": "袁紹",   "faction": "yuanshao", "city": "ye",       "ldr": 84, "war": 70, "int": 72, "pol": 80, "troop": "infantry", "skill": "rally" },
+  { "id": "yanliang",   "name": "顏良",   "zh": "顏良",   "faction": "yuanshao", "city": "ye",       "ldr": 76, "war": 91, "int": 42, "pol": 36, "troop": "infantry", "skill": "duel" },
+  { "id": "wenchou",    "name": "文醜",   "zh": "文醜",   "faction": "yuanshao", "city": "ye",       "ldr": 74, "war": 90, "int": 38, "pol": 32, "troop": "cavalry",  "skill": "charge" },
+  { "id": "tianfeng",   "name": "田豐",   "zh": "田豐",   "faction": "yuanshao", "city": "ye",       "ldr": 60, "war": 36, "int": 92, "pol": 86, "troop": "archer",   "skill": "fire" },
+
+  { "id": "yuanshu",    "name": "袁術",   "zh": "袁術",   "faction": "yuanshu",  "city": "shouchun", "ldr": 70, "war": 62, "int": 60, "pol": 68, "troop": "infantry", "skill": "guard" },
+  { "id": "jiling",     "name": "紀靈",   "zh": "紀靈",   "faction": "yuanshu",  "city": "shouchun", "ldr": 74, "war": 84, "int": 50, "pol": 42, "troop": "infantry", "skill": "charge" },
+  { "id": "yanghong",   "name": "楊弘",   "zh": "楊弘",   "faction": "yuanshu",  "city": "wan",      "ldr": 58, "war": 44, "int": 80, "pol": 76, "troop": "archer",   "skill": "volley" },
+
+  { "id": "liubiao",    "name": "劉表",   "zh": "劉表",   "faction": "liubiao",  "city": "xiangyang","ldr": 72, "war": 50, "int": 78, "pol": 84, "troop": "infantry", "skill": "guard" },
+  { "id": "huangzhong", "name": "黃忠",   "zh": "黃忠",   "faction": "liubiao",  "city": "xiangyang","ldr": 84, "war": 93, "int": 60, "pol": 52, "troop": "archer",   "skill": "snipe" },
+  { "id": "caimao",     "name": "蔡瑁",   "zh": "蔡瑁",   "faction": "liubiao",  "city": "jiangxia", "ldr": 72, "war": 68, "int": 70, "pol": 66, "troop": "archer",   "skill": "volley" },
+  { "id": "wenpin",     "name": "文聘",   "zh": "文聘",   "faction": "liubiao",  "city": "jiangxia", "ldr": 78, "war": 78, "int": 64, "pol": 56, "troop": "infantry", "skill": "guard" },
+
+  { "id": "liuzhang",   "name": "劉璋",   "zh": "劉璋",   "faction": "liuzhang", "city": "chengdu",  "ldr": 58, "war": 42, "int": 60, "pol": 70, "troop": "infantry", "skill": "guard" },
+  { "id": "zhangren",   "name": "張任",   "zh": "張任",   "faction": "liuzhang", "city": "chengdu",  "ldr": 80, "war": 82, "int": 70, "pol": 58, "troop": "archer",   "skill": "snipe" },
+  { "id": "yanyan",     "name": "嚴顏",   "zh": "嚴顏",   "faction": "liuzhang", "city": "chengdu",  "ldr": 78, "war": 80, "int": 62, "pol": 54, "troop": "infantry", "skill": "guard" },
+
+  { "id": "mateng",     "name": "馬騰",   "zh": "馬騰",   "faction": "mateng",   "city": "xiliang",  "ldr": 82, "war": 84, "int": 56, "pol": 58, "troop": "cavalry",  "skill": "rally" },
+  { "id": "machao",     "name": "馬超",   "zh": "馬超",   "faction": "mateng",   "city": "xiliang",  "ldr": 88, "war": 96, "int": 46, "pol": 40, "troop": "cavalry",  "skill": "charge" },
+  { "id": "pangde",     "name": "龐德",   "zh": "龐德",   "faction": "mateng",   "city": "xiliang",  "ldr": 80, "war": 90, "int": 58, "pol": 50, "troop": "infantry", "skill": "duel" },
+
+  { "id": "gongsunzan", "name": "公孫瓚", "zh": "公孫瓚", "faction": "gongsun",  "city": "beiping",  "ldr": 82, "war": 80, "int": 58, "pol": 60, "troop": "cavalry",  "skill": "charge" },
+  { "id": "tianyu",     "name": "田豫",   "zh": "田豫",   "faction": "gongsun",  "city": "beiping",  "ldr": 74, "war": 66, "int": 76, "pol": 72, "troop": "archer",   "skill": "volley" },
+
+  { "id": "zhaoyun",    "name": "趙雲",   "zh": "趙雲",   "faction": "",         "city": "jinyang",  "ldr": 91, "war": 96, "int": 76, "pol": 66, "troop": "cavalry",  "skill": "charge" },
+  { "id": "taishici",   "name": "太史慈", "zh": "太史慈", "faction": "",         "city": "beihai",   "ldr": 82, "war": 92, "int": 62, "pol": 54, "troop": "archer",   "skill": "snipe" },
+  { "id": "ganning",    "name": "甘寧",   "zh": "甘寧",   "faction": "",         "city": "changsha", "ldr": 80, "war": 94, "int": 58, "pol": 40, "troop": "infantry", "skill": "charge" },
+  { "id": "xuchu",      "name": "許褚",   "zh": "許褚",   "faction": "",         "city": "xuchang",  "ldr": 68, "war": 96, "int": 36, "pol": 30, "troop": "infantry", "skill": "duel" },
+  { "id": "dianwei",    "name": "典韋",   "zh": "典韋",   "faction": "",         "city": "chenliu",  "ldr": 66, "war": 95, "int": 34, "pol": 28, "troop": "infantry", "skill": "duel" },
+  { "id": "guojia",     "name": "郭嘉",   "zh": "郭嘉",   "faction": "",         "city": "puyang",   "ldr": 70, "war": 32, "int": 98, "pol": 80, "troop": "archer",   "skill": "fire" },
+  { "id": "xuhuang",    "name": "徐晃",   "zh": "徐晃",   "faction": "",         "city": "hanzhong", "ldr": 82, "war": 88, "int": 66, "pol": 56, "troop": "infantry", "skill": "guard" },
+  { "id": "zhangliao",  "name": "張遼",   "zh": "張遼",   "faction": "",         "city": "jinyang",  "ldr": 90, "war": 92, "int": 72, "pol": 58, "troop": "cavalry",  "skill": "rally" },
+  { "id": "weiyan",     "name": "魏延",   "zh": "魏延",   "faction": "",         "city": "changsha", "ldr": 78, "war": 89, "int": 60, "pol": 44, "troop": "infantry", "skill": "charge" },
+  { "id": "lusu",       "name": "魯肅",   "zh": "魯肅",   "faction": "",         "city": "jiangxia", "ldr": 76, "war": 40, "int": 90, "pol": 88, "troop": "archer",   "skill": "rally" },
+  { "id": "zhugeliang", "name": "諸葛亮", "zh": "諸葛亮", "faction": "",         "city": "xiangyang","ldr": 92, "war": 38, "int": 100, "pol": 95, "troop": "archer",  "skill": "fire", "hidden": true }
+]

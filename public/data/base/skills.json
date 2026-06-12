@@ -1,0 +1,9 @@
+[
+  { "id": "charge", "name": "突擊", "zh": "突擊", "desc": "猛撞相鄰敵軍，造成180%傷害並將其擊退。", "type": "damage", "power": 1.8, "range": 1, "aoe": 0, "cooldown": 3, "push": true },
+  { "id": "duel",   "name": "單挑", "zh": "單挑", "desc": "向相鄰敵將搦戰。武力較高（加上運氣）的一方，將重創落敗者。", "type": "duel", "power": 2.6, "range": 1, "aoe": 0, "cooldown": 4 },
+  { "id": "fire",   "name": "火計", "zh": "火計", "desc": "以智力施放烈焰，吞噬射程3內目標及其周圍。林地將燃起熊熊大火。", "type": "intdamage", "power": 1.6, "range": 3, "aoe": 1, "cooldown": 4 },
+  { "id": "volley", "name": "箭雨", "zh": "箭雨", "desc": "對射程3內目標及其周圍傾瀉箭雨，造成110%傷害。", "type": "damage", "power": 1.1, "range": 3, "aoe": 1, "cooldown": 3 },
+  { "id": "rally",  "name": "鼓舞", "zh": "鼓舞", "desc": "激勵周圍友軍：恢復自身與相鄰友軍的兵力（依統率）。", "type": "heal", "power": 1.5, "range": 0, "aoe": 1, "cooldown": 4 },
+  { "id": "guard",  "name": "鐵壁", "zh": "鐵壁", "desc": "嚴陣以待：至下回合為止，受到的傷害減半。", "type": "buff", "power": 0.5, "range": 0, "aoe": 0, "cooldown": 3 },
+  { "id": "snipe",  "name": "神射", "zh": "神射", "desc": "射程4的致命一箭，造成200%傷害。鐵壁無法抵擋。", "type": "damage", "power": 2.0, "range": 4, "aoe": 0, "cooldown": 4, "pierce": true }
+]
