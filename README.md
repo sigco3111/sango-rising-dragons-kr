@@ -1,4 +1,4 @@
-# 삼국・起龍 — 한국어 한글화 포크
+# 삼국・기용 — 한국어 한글화 포크
 
 > **三国・起龍 (Romance of the Three Kingdoms)**
 > [ryantsai/sango-rising-dragons](https://github.com/ryantsai/sango-rising-dragons)의 한국어 한글화 포크
