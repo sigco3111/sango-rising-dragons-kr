@@ -28,6 +28,17 @@ export function initHud() {
   $('endTurnBtn').onclick = () => { if (!isBusy()) { sfx('click'); endTurn(); } };
   $('saveBtn').onclick = () => { saveGame(); log('💾 진행 상황이 저장되었습니다.'); sfx('confirm'); };
 
+  // Keyboard shortcut: Enter = turn end (skip when typing in inputs/textareas)
+  window.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || (e.target as HTMLElement | null)?.isContentEditable) return;
+    e.preventDefault();
+    if (G?.over) return;
+    if (!isBusy()) { sfx('click'); endTurn(); }
+  });
+
   // autopilot toggle — restore previous state, wire change handler, sync visuals
   const tog = $('autopilotToggle') as HTMLInputElement;
   loadAutopilot();
