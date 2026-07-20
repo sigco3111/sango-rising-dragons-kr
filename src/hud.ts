@@ -13,6 +13,12 @@ const $ = (id: string) => document.getElementById(id)!;
 const TROOP_ICONS: Record<string, string> = { infantry: '🛡', cavalry: '🐎', archer: '🏹' };
 export const TROOP_NAMES: Record<string, string> = { infantry: '보병', cavalry: '기병', archer: '궁병' };
 
+/** 숫자를 안전하게 포맷 — NaN/undefined/null이면 "—" */
+function fmtNum(v: unknown): string {
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toLocaleString() : '—';
+}
+
 let selectedCity: string | null = null;
 
 // ============================================================ setup
@@ -41,9 +47,9 @@ export function showGameUi() {
 function refresh() {
   if (!G) return;
   $('dateVal').textContent = `${yearOf(G.turn)}년 ${seasonOf(G.turn)} ${monthOf(G.turn)}월`;
-  $('goldVal').textContent = G.gold.toLocaleString();
-  $('foodVal').textContent = G.food.toLocaleString();
-  $('cpVal').textContent = `${G.cp}/${maxCp()}`;
+  $('goldVal').textContent = fmtNum(G.gold);
+  $('foodVal').textContent = fmtNum(G.food);
+  $('cpVal').textContent = `${fmtNum(G.cp)}/${maxCp()}`;
   const f = faction(G.playerFaction);
   ($('factionChip').querySelector('.dot') as HTMLElement).style.background = f.color;
   $('factionName').textContent = f.name;
@@ -107,7 +113,7 @@ function renderSide() {
       <div class="statgrid">
         <div class="row"><span>성도</span><b>${myCities.length} / 20</b></div>
         <div class="row"><span>목표</span><b>12개 성도</b></div>
-        <div class="row"><span>총병력</span><b>${troops.toLocaleString()}</b></div>
+        <div class="row"><span>총병력</span><b>${fmtNum(troops)}</b></div>
         <div class="row"><span>장수</span><b>${officers.length}</b></div>
       </div>
       <div style="color:var(--muted);font-size:12px;margin-bottom:6px">지도에서 아군 성도를 선택해 명령을 내리세요. ⚡ 명령점은 매 턴 회복됩니다.</div>
@@ -125,7 +131,7 @@ function renderSide() {
 
   const stats = `
     <div class="statgrid">
-      <div class="row"><span>병력</span><b>${c.troops.toLocaleString()}</b></div>
+      <div class="row"><span>병력</span><b>${fmtNum(c.troops)}</b></div>
       <div class="row"><span>성벽</span><b>${'▮'.repeat(c.walls)}${'▯'.repeat(5 - c.walls)}</b></div>
       <div class="row"><span>농지</span><b>${'▮'.repeat(c.farm)}${'▯'.repeat(6 - c.farm)}</b></div>
       <div class="row"><span>시장</span><b>${'▮'.repeat(c.market)}${'▯'.repeat(6 - c.market)}</b></div>
@@ -252,7 +258,7 @@ function marchDialog(from: string, to: string) {
     }
     if (!G.cp) { log('⚠ 명령점이 부족합니다.'); return; }
     G.cp--;
-    src.troops -= troops;
+    src.troops = Math.max(0, src.troops - troops);
     for (const id of picked) G.officers[id].acted = true;
     const setup: BattleSetup = {
       attacker: G.playerFaction, defender: tgt.owner, cityId: to,

@@ -189,7 +189,7 @@ export class MapScene extends Phaser.Scene {
       const f = faction(st.owner);
       const color = Phaser.Display.Color.HexStringToColor(f.color).color;
       this.flags.get(c.id)!.setFillStyle(color);
-      this.glyphs.get(c.id)!.setText(st.owner === 'neutral' ? '' : f.zh);
+      this.glyphs.get(c.id)!.setText(st.owner === 'neutral' ? '' : (f as any).symbol || f.zh);
       this.badges.get(c.id)!.setText(`${Math.round(st.troops / 1000)}k`);
       const mine = officersIn(c.id, G.playerFaction).length;
       this.offDots.get(c.id)!.setText(st.owner === G.playerFaction && mine > 0 ? '👤'.repeat(Math.min(mine, 3)) : '');
