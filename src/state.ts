@@ -172,10 +172,14 @@ export function recruit(cityId: string): boolean {
     bus.emit('log', '⚠ 징병에는 200 금과 300 식량이 필요합니다.'); return false;
   }
   if (!spendCp()) return false;
+  const beforeTroops = G.cities[cityId]?.troops ?? 0;
   G.gold -= RECRUIT_COST_GOLD; G.food -= RECRUIT_COST_FOOD;
   G.cities[cityId].troops += RECRUIT_AMOUNT;
+  const afterTroops = G.cities[cityId].troops;
+  // Debug hook: window.__sango.getG().cities[cityId].troops 으로 콘솔 검증 가능
+  try { (window as any).__sangoRecruitLog = { cityId, before: beforeTroops, after: afterTroops, gold: G.gold, food: G.food }; } catch {}
   bus.emit('sfx', 'recruit');
-  bus.emit('log', `⚔ ${cityDef(cityId).name}에서 신병 ${RECRUIT_AMOUNT}명 모집.`);
+  bus.emit('log', `⚔ ${cityDef(cityId).name}에서 신병 ${RECRUIT_AMOUNT}명 모집. (${beforeTroops.toLocaleString()}→${afterTroops.toLocaleString()})`);
   bus.emit('refresh');
   return true;
 }
@@ -531,11 +535,14 @@ export function stepPlayerAutopilot(silent = false): boolean {
       if (G.gold < RECRUIT_COST_GOLD) { bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ⚔ 징병 ✗ 스킵 — 금 부족.`, 'auto'); continue; }
       if (G.food < RECRUIT_COST_FOOD) { bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ⚔ 징병 ✗ 스킵 — 식량 부족.`, 'auto'); continue; }
       const before = c.troops;
-      if (recruit(a.cityId)) {
-        bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ⚔ 징병 ✓ ${before.toLocaleString()}→${c.troops.toLocaleString()} (+${(c.troops - before).toLocaleString()}) · -200 금 · -300 식량 (남은 CP: ${G.cp}, 금: ${G.gold.toLocaleString()}).`, 'auto');
-        return G.cp > 0;
+      const ok = recruit(a.cityId);
+      const after = c.troops;
+      if (!ok || after === before) {
+        bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ⚔ 징병 ✗ 실패 (변화 없음).`, 'auto');
+        continue;
       }
-      continue;
+      bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ⚔ 징병 ✓ ${before.toLocaleString()}→${after.toLocaleString()} (+${(after - before).toLocaleString()}) · -200 금 · -300 식량 (남은 CP: ${G.cp}, 금: ${G.gold.toLocaleString()}).`, 'auto');
+      return G.cp > 0;
     }
     if ((a.kind === 'farm' || a.kind === 'market' || a.kind === 'walls') && a.cityId) {
       const c = G.cities[a.cityId];
