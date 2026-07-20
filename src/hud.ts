@@ -131,31 +131,49 @@ function renderSide() {
       <div class="row"><span>시장</span><b>${'▮'.repeat(c.market)}${'▯'.repeat(6 - c.market)}</b></div>
     </div>`;
 
-  if (!own) {
-    const officers = officersIn(selectedCity, c.owner);
+  if (c.owner === 'neutral') {
+    const description = ((cityDef(selectedCity) as any).desc || '재야 군웅이 다투는 변경의 도시.');
+    const officersHere = officersIn(selectedCity, c.owner);
     body.innerHTML = `${stats}
       <div style="color:var(--muted);font-size:12px;margin-bottom:8px">
-        ${c.owner === 'neutral' ? '재야 성도 — 수비 약함.' : `${f.name}의 영지.`}
+        🏴 <b>재야 성도</b> — 수비 약함.<br>
+        <i>${description}</i><br>
         인접한 아군 성도에서 출병하여 빼앗을 수 있습니다.
       </div>
-      ${officers.map((o) => officerCard(o)).join('')}`;
+      ${officersHere.map((o) => officerCard(o)).join('')}`;
+    return;
+  }
+  if (!own) {
+    const description = ((cityDef(selectedCity) as any).desc || '적의 영토.');
+    const officersThere = officersIn(selectedCity, c.owner);
+    body.innerHTML = `${stats}
+      <div style="color:var(--muted);font-size:12px;margin-bottom:8px">
+        ⚔ <b>${f.name}의 영지</b> (적)<br>
+        <i>${description}</i><br>
+        인접한 아군 성도에서 출병하여 빼앗을 수 있습니다.
+      </div>
+      ${officersThere.map((o) => officerCard(o)).join('')}`;
     return;
   }
 
   const officers = officersIn(selectedCity, G.playerFaction);
   const canAct = !isBusy() && !G.over;
+  const cityDesc = (cityDef(selectedCity) as any).desc || '';
   body.innerHTML = `${stats}
-    <div class="actions">
-      <button id="bFarm" ${!canAct ? 'disabled' : ''} title="매 레벨마다 매 턴 식량 +50 (${DEV_COST} 금, 1⚡)">🌾 개간</button>
-      <button id="bMarket" ${!canAct ? 'disabled' : ''} title="매 레벨마다 매 턴 금전 +60 (${DEV_COST} 금, 1⚡)">🪙 통상</button>
-      <button id="bWalls" ${!canAct ? 'disabled' : ''} title="수비 강화 (${DEV_COST} 금, 1⚡)">🧱 축성</button>
-      <button id="bRecruit" ${!canAct ? 'disabled' : ''} title="병력 +1500 (200 금 +300 식량, 1⚡)">⚔ 징병</button>
-      <button id="bMarch" class="primary" ${!canAct || officers.length === 0 ? 'disabled' : ''} title="장수와 부대를 인접한 성으로 출정 (1⚡)">🚩 출정</button>
+    <div style="color:var(--muted);font-size:11px;margin-bottom:6px;font-style:italic">
+      ${cityDesc}
     </div>
-    <div style="margin-top:12px;font-size:12px;color:var(--muted)">주둔 장수${freeOfficersIn(selectedCity).length > 0 ? ' · <i>소문에 성 중에 재야 인재가 있다고……</i>' : ''}</div>
+    <div class="actions">
+      <button id="bFarm" ${!canAct ? 'disabled' : ''} title="농업 개발 (${DEV_COST} 금, 1⚡). 매 레벨마다 매 턴 식량 +50">🌾 개간</button>
+      <button id="bMarket" ${!canAct ? 'disabled' : ''} title="상업 개발 (${DEV_COST} 금, 1⚡). 매 레벨마다 매 턴 금전 +60">🪙 통상</button>
+      <button id="bWalls" ${!canAct ? 'disabled' : ''} title="성벽 강화 (${DEV_COST} 금, 1⚡). 전투 시 방어 보너스">🧱 축성</button>
+      <button id="bRecruit" ${!canAct ? 'disabled' : ''} title="신병 모집 (200 금 +300 식량, 1⚡). 병력 +1,500">⚔ 징병</button>
+      <button id="bMarch" class="primary" ${!canAct || officers.length === 0 ? 'disabled' : ''} title="장수와 부대를 인접한 성으로 출정 (1⚡). 적지는 자동으로 전투 발생">🚩 출정</button>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted)">주둔 장수${freeOfficersIn(selectedCity).length > 0 ? ' · <i>소문에 성 중에 재야 인재가 있다고……</i>' : ' · <i>현재 재야 인재를 찾을 수 없습니다.</i>'}</div>
     ${officers.map((o) => officerCard(o, `
-        <button data-search="${o.id}" ${!canAct || o.acted ? 'disabled' : ''} title="성 안의 재야 인재를 수색 / 세금 징수 (1⚡)">🔍</button>
-        <button data-train="${o.id}" ${!canAct || o.acted ? 'disabled' : ''} title="조련: 경험치 획득 (150 금, 1⚡)">🎯</button>
+        <button data-search="${o.id}" ${!canAct || o.acted ? 'disabled' : ''} title="수색: 성 안의 재야 인재를 찾거나 세금 100 금 징수 (1⚡)">🔍</button>
+        <button data-train="${o.id}" ${!canAct || o.acted ? 'disabled' : ''} title="조련: 장수 경험치 +1 (150 금, 1⚡)">🎯</button>
       `)).join('')}
   `;
   if (canAct) {
@@ -185,26 +203,26 @@ function marchDialog(from: string, to: string) {
 
   const defOff = officersIn(to, tgt.owner);
   const intel = hostile
-    ? `<div style="font-size:12px;color:var(--muted);margin:4px 0 10px">수비군: 약 ${tgt.troops.toLocaleString()}병력, 성벽${tgt.walls}단계${defOff.length ? ', 수장: ' + defOff.map((o) => officerDef(o.id).name).join('、') : ''}</div>`
-    : `<div style="font-size:12px;color:var(--muted);margin:4px 0 10px">아군 성도 — 부대와 장수를 이동.</div>`;
+    ? `<div style="font-size:12px;color:var(--muted);margin:4px 0 10px">수비군: 약 ${tgt.troops.toLocaleString()} 병력, 성벽 ${tgt.walls}단계${defOff.length ? ', 수장: ' + defOff.map((o) => officerDef(o.id).name + ((officerDef(o.id) as any).alias ? ` (${(officerDef(o.id) as any).alias})` : '')).join(', ') : ''}</div>`
+    : `<div style="font-size:12px;color:var(--muted);margin:4px 0 10px">아군 성도 — 부대와 장수를 이동합니다.</div>`;
 
   const maxTroops = Math.max(0, src.troops - 500);
   if (hostile && maxTroops < 500) { log('⚠ 출정할 병력이 부족합니다 (최소 500명 주둔 필요).'); return; }
 
   showModalRaw(`
-    <h2>${hostile ? '⚔ 공격' : '🚩 이동'}${cityDef(to).name}</h2>
+    <h2>${hostile ? '⚔ 공격' : '🚩 이동'}: ${cityDef(to).name}</h2>
     <div class="mShort">${cityDef(from).name}에서 출발 · 출정 후 잔류 병력: <b id="mLeft"></b></div>
     ${intel}
-    <div style="font-size:13px;margin-bottom:6px">통솔 장수 (최대 3명):</div>
+    <div style="font-size:13px;margin-bottom:6px">통솔 장수를 선택하세요 (최대 3명):</div>
     <div id="mOfficers">${officers.map((o) => `
       <label class="officer-card" style="cursor:pointer">
         <input type="checkbox" value="${o.id}" style="accent-color:#d4a536">
         ${portraitHtml(o, 36)}
-        <div class="info"><div class="nm">${officerDef(o.id).name} <span class="lv">Lv${o.level}</span></div>
+        <div class="info"><div class="nm">${officerDef(o.id).name}${(officerDef(o.id) as any).alias ? ` <span style="color:var(--muted);font-weight:400">(${(officerDef(o.id) as any).alias})</span>` : ''} <span class="lv">Lv${o.level}</span></div>
         <div class="st">${TROOP_ICONS[officerDef(o.id).troop]} 무력 ${effStat(o, 'war')} · 통솔 ${effStat(o, 'ldr')} · ✦ ${skillDef(officerDef(o.id).skill).name}</div></div>
       </label>`).join('')}
     </div>
-    <div style="margin:12px 0 4px;font-size:13px">출정 병력: <b id="mTroopsVal"></b></div>
+    <div style="margin:12px 0 4px;font-size:13px">출정 병력: <b id="mTroopsVal"></b> <span style="color:var(--muted);font-size:11px">(남겨둘 병력: ${(src.troops - 500).toLocaleString()})</span></div>
     <input id="mTroops" type="range" min="500" max="${Math.max(500, maxTroops)}" value="${Math.max(500, Math.floor(maxTroops * 0.8))}" step="100" style="width:100%">
     <div class="mChoices">
       <button id="mGo" class="primary">${hostile ? '⚔ 공격!' : '🚩 출발'}</button>
