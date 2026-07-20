@@ -1,198 +1,296 @@
 [
   {
     "id": "caocao",
-    "name": "조조"
+    "name": "조조",
+    "alias": "패왕",
+    "full_name": "조조 (패왕)"
   },
   {
     "id": "xiahoudun",
-    "name": "하후돈"
+    "name": "하후돈",
+    "alias": "맹장",
+    "full_name": "하후돈 (맹장)"
   },
   {
     "id": "xiahouyuan",
-    "name": "하후원"
+    "name": "하후원",
+    "alias": "맹장",
+    "full_name": "하후원 (맹장)"
   },
   {
     "id": "caoren",
-    "name": "조인"
+    "name": "조인",
+    "alias": "필부",
+    "full_name": "조인 (필부)"
   },
   {
     "id": "xunyu",
-    "name": "순욱"
+    "name": "순욱",
+    "alias": "왕佐",
+    "full_name": "순욱 (왕佐)"
   },
   {
     "id": "liubei",
-    "name": "유비"
+    "name": "유비",
+    "alias": "인덕",
+    "full_name": "유비 (인덕)"
   },
   {
     "id": "guanyu",
-    "name": "관우"
+    "name": "관우",
+    "alias": "의기",
+    "full_name": "관우 (의기)"
   },
   {
     "id": "zhangfei",
-    "name": "장비"
+    "name": "장비",
+    "alias": "맹장",
+    "full_name": "장비 (맹장)"
   },
   {
     "id": "jianyong",
-    "name": "간옹"
+    "name": "간옹",
+    "alias": "근신",
+    "full_name": "간옹 (근신)"
   },
   {
     "id": "sunjian",
-    "name": "손견"
+    "name": "손견",
+    "alias": "표범",
+    "full_name": "손견 (표범)"
   },
   {
     "id": "sunce",
-    "name": "손책"
+    "name": "손책",
+    "alias": "소패왕",
+    "full_name": "손책 (소패왕)"
   },
   {
     "id": "zhouyu",
-    "name": "주유"
+    "name": "주유",
+    "alias": "대원수",
+    "full_name": "주유 (대원수)"
   },
   {
     "id": "huanggai",
-    "name": "황개"
+    "name": "황개",
+    "alias": "노장",
+    "full_name": "황개 (노장)"
   },
   {
     "id": "chengpu",
-    "name": "정범"
+    "name": "정범",
+    "alias": "숙장",
+    "full_name": "정범 (숙장)"
   },
   {
     "id": "dongzhuo",
-    "name": "동탁"
+    "name": "동탁",
+    "alias": "폭군",
+    "full_name": "동탁 (폭군)"
   },
   {
     "id": "lubu",
-    "name": "여포"
+    "name": "여포",
+    "alias": "무쌍",
+    "full_name": "여포 (무쌍)"
   },
   {
     "id": "huaxiong",
-    "name": "화웅"
+    "name": "화웅",
+    "alias": "맹장",
+    "full_name": "화웅 (맹장)"
   },
   {
     "id": "jiaxu",
-    "name": "가후"
+    "name": "가후",
+    "alias": "참모",
+    "full_name": "가후 (참모)"
   },
   {
     "id": "lijue",
-    "name": "이각"
+    "name": "이각",
+    "alias": "간웅",
+    "full_name": "이각 (간웅)"
   },
   {
     "id": "yuanshao",
-    "name": "원소"
+    "name": "원소",
+    "alias": "명문",
+    "full_name": "원소 (명문)"
   },
   {
     "id": "yanliang",
-    "name": "안량"
+    "name": "안량",
+    "alias": "맹장",
+    "full_name": "안량 (맹장)"
   },
   {
     "id": "wenchou",
-    "name": "문추"
+    "name": "문추",
+    "alias": "맹장",
+    "full_name": "문추 (맹장)"
   },
   {
     "id": "tianfeng",
-    "name": "전풍"
+    "name": "전풍",
+    "alias": "간신",
+    "full_name": "전풍 (간신)"
   },
   {
     "id": "yuanshu",
-    "name": "원술"
+    "name": "원술",
+    "alias": "찬위",
+    "full_name": "원술 (찬위)"
   },
   {
     "id": "jiling",
-    "name": "기령"
+    "name": "기령",
+    "alias": "장수",
+    "full_name": "기령 (장수)"
   },
   {
     "id": "yanghong",
-    "name": "양홍"
+    "name": "양홍",
+    "alias": "모사",
+    "full_name": "양홍 (모사)"
   },
   {
     "id": "liubiao",
-    "name": "유표"
+    "name": "유표",
+    "alias": "신주",
+    "full_name": "유표 (신주)"
   },
   {
     "id": "huangzhong",
-    "name": "황충"
+    "name": "황충",
+    "alias": "노장",
+    "full_name": "황충 (노장)"
   },
   {
     "id": "caimao",
-    "name": "채모"
+    "name": "채모",
+    "alias": "숙장",
+    "full_name": "채모 (숙장)"
   },
   {
     "id": "wenpin",
-    "name": "문빙"
+    "name": "문빙",
+    "alias": "장수",
+    "full_name": "문빙 (장수)"
   },
   {
     "id": "liuzhang",
-    "name": "유장"
+    "name": "유장",
+    "alias": "약주",
+    "full_name": "유장 (약주)"
   },
   {
     "id": "zhangren",
-    "name": "장임"
+    "name": "장임",
+    "alias": "충장",
+    "full_name": "장임 (충장)"
   },
   {
     "id": "yanyan",
-    "name": "엄안"
+    "name": "엄안",
+    "alias": "노장",
+    "full_name": "엄안 (노장)"
   },
   {
     "id": "mateng",
-    "name": "마등"
+    "name": "마등",
+    "alias": "서량맹장",
+    "full_name": "마등 (서량맹장)"
   },
   {
     "id": "machao",
-    "name": "마초"
+    "name": "마초",
+    "alias": "신장",
+    "full_name": "마초 (신장)"
   },
   {
     "id": "pangde",
-    "name": "방덕"
+    "name": "방덕",
+    "alias": "맹장",
+    "full_name": "방덕 (맹장)"
   },
   {
     "id": "gongsunzan",
-    "name": "공손찬"
+    "name": "공손찬",
+    "alias": "백마장수",
+    "full_name": "공손찬 (백마장수)"
   },
   {
     "id": "tianyu",
-    "name": "전욱"
+    "name": "전욱",
+    "alias": "북방지장",
+    "full_name": "전욱 (북방지장)"
   },
   {
     "id": "zhaoyun",
-    "name": "조운"
+    "name": "조운",
+    "alias": "자룡",
+    "full_name": "조운 (자룡)"
   },
   {
     "id": "taishici",
-    "name": "태사자"
+    "name": "태사자",
+    "alias": "맹장",
+    "full_name": "태사자 (맹장)"
   },
   {
     "id": "ganning",
-    "name": "감녕"
+    "name": "감녕",
+    "alias": "맹장",
+    "full_name": "감녕 (맹장)"
   },
   {
     "id": "xuchu",
-    "name": "허저"
+    "name": "허저",
+    "alias": "근위장",
+    "full_name": "허저 (근위장)"
   },
   {
     "id": "dianwei",
-    "name": "전위"
+    "name": "전위",
+    "alias": "근위장",
+    "full_name": "전위 (근위장)"
   },
   {
     "id": "guojia",
-    "name": "곽가"
+    "name": "곽가",
+    "alias": "참모",
+    "full_name": "곽가 (참모)"
   },
   {
     "id": "xuhuang",
-    "name": "서황"
+    "name": "서황",
+    "alias": "오대장",
+    "full_name": "서황 (오대장)"
   },
   {
     "id": "zhangliao",
-    "name": "장료"
+    "name": "장료",
+    "alias": "맹장",
+    "full_name": "장료 (맹장)"
   },
   {
     "id": "weiyan",
-    "name": "위연"
+    "name": "위연",
+    "alias": "맹장",
+    "full_name": "위연 (맹장)"
   },
   {
     "id": "lusu",
-    "name": "노숙"
+    "name": "노숙",
+    "alias": "참모",
+    "full_name": "노숙 (참모)"
   },
   {
     "id": "zhugeliang",
-    "name": "제갈량"
+    "name": "제갈량",
+    "alias": "와룡",
+    "full_name": "제갈량 (와룡)"
   }
 ]
