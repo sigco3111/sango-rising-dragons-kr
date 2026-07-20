@@ -1,0 +1,14 @@
+# Vercel이 무시할 파일
+node_modules/
+src/
+screenshots/
+play.sh
+.git/
+.gitignore
+*.md
+!README.md
+*.log
+.DS_Store
+public/
+*.ts
+*.tsx
