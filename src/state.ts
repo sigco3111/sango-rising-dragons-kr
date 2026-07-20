@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { content, cityDef, officerDef, itemDef, faction } from './content';
-import type { GameState, CityState, OfficerState, EventDef, EventChoice, OfficerDef } from './types';
+import { armyPower } from './battle/model';
+import type { GameState, CityState, OfficerState, EventDef, EventChoice, OfficerDef, BattleSetup, BattleResult } from './types';
 
 export const bus = new Phaser.Events.EventEmitter();
 
@@ -266,43 +267,149 @@ export function checkVictory() {
   else if (owned >= 12) { G.over = 'win'; bus.emit('gameover', 'win'); }
 }
 
-// ---------- autopilot queue (A-scope: develop + recruit only) ----------
+// ---------- autopilot queue (full scope: develop + recruit + search + train + march) ----------
 //
-// 정책: 1) 식량 부족(farm<2) 도시 → 개간 2) 인접 적지 있는 미보강 도시(farm≥2) → 통상
-//       3) 병력<8k 도시 → 징병 4) 벽<3이고 인접 적지 → 축성. CP 소진/실패 시 종료.
+// 우선순위 (한 step = 한 행동):
+//   P1 march-attack  — 강한 적지 출정 (autoResolve). CP>=1 + ratio>1.4 (CP 충분하면 ratio>1.0까지 완화)
+//   P2 march-move    — 적 인접 도시로 부대 재배치 (응집)
+//   P3 search        — 재야 인재 있는 도시 수색 (CP>=2일 때)
+//   P4 train         — 가장 약한 아군 장수 조련 (CP>=2일 때)
+//   P5 develop       — 개간/통상/축성/징병 (A안과 동일, CP 부족할 때)
+//
+// 모든 행동은 CP=0 또는 행동 불가 시 종료 → AI 턴 체인.
 
 interface AutoAction {
-  cityId: string;
-  kind: 'farm' | 'market' | 'walls' | 'recruit';
+  kind: 'march-attack' | 'march-move' | 'search' | 'train' | 'farm' | 'market' | 'walls' | 'recruit';
+  cityId?: string;
+  officerId?: string;
+  // march 전용
+  targetCityId?: string;
+  picked?: string[];
+  troops?: number;
 }
 
 const ACTION_ICON: Record<AutoAction['kind'], string> = {
+  'march-attack': '⚔ 출정(공격)',
+  'march-move': '🚩 출정(이동)',
+  'search': '🔍 수색',
+  'train': '🎯 조련',
   farm: '🌾 개간', market: '🪙 통상', walls: '🧱 축성', recruit: '⚔ 징병',
 };
 
-/** Build a priority-ordered queue of A-scope actions for the player faction. */
-function buildAutopilotQueue(): AutoAction[] {
-  const my = citiesOf(G.playerFaction);
-  if (my.length === 0) return [];
-  const q: AutoAction[] = [];
+const ATTACK_RATIO_STRICT = 1.4;  // AI와 동일 강도
+const ATTACK_RATIO_RELAXED = 1.0;  // CP 충분할 때 (조련 안 하는 절약 모드)
 
+/** Find best offensive target across all player cities. Returns null if none strong enough. */
+function pickBestAttack(allowRelaxed: boolean): AutoAction | null {
+  if (G.cp <= 0) return null;
+  const my = citiesOf(G.playerFaction);
+  const threshold = allowRelaxed ? ATTACK_RATIO_RELAXED : ATTACK_RATIO_STRICT;
+  let best: { from: string; to: string; ratio: number; picked: string[]; troops: number } | null = null;
+
+  for (const c of my) {
+    if (c.troops < 6000) continue;
+    const cd = cityDef(c.id);
+    const available = officersIn(c.id, G.playerFaction).filter((o) => !o.acted);
+    if (available.length === 0) continue;
+    for (const adjId of cd.adj) {
+      const t = G.cities[adjId];
+      if (t.owner === G.playerFaction) continue;
+      const maxTroops = Math.max(0, c.troops - 500);
+      if (maxTroops < 500) continue;
+      const picked = available.slice(0, 3).map((o) => o.id);
+      const sendTroops = Math.floor(maxTroops * 0.85);
+      const defOff = officersIn(adjId, t.owner).map((o) => o.id);
+      const myPow = armyPower(sendTroops, picked);
+      const defPow = armyPower(t.troops, defOff, t.walls);
+      const ratio = myPow / Math.max(1, defPow);
+      if (ratio >= threshold && (!best || ratio > best.ratio)) {
+        best = { from: c.id, to: adjId, ratio, picked, troops: sendTroops };
+      }
+    }
+  }
+  if (!best) return null;
+  return { kind: 'march-attack', cityId: best.from, targetCityId: best.to, picked: best.picked, troops: best.troops };
+}
+
+/** Move an officer-bearing stack toward an adjacent enemy (non-attacking) to consolidate. */
+function pickBestMove(): AutoAction | null {
+  if (G.cp <= 0) return null;
+  const my = citiesOf(G.playerFaction);
+  for (const c of my) {
+    const cd = cityDef(c.id);
+    const available = officersIn(c.id, G.playerFaction).filter((o) => !o.acted);
+    if (available.length === 0) continue;
+    // find adjacent friendly city that itself borders an enemy (front-line)
+    for (const adjId of cd.adj) {
+      if (G.cities[adjId].owner !== G.playerFaction) continue;
+      const adjCd = cityDef(adjId);
+      const frontline = adjCd.adj.some((a) => G.cities[a].owner !== G.playerFaction);
+      if (!frontline) continue;
+      const maxTroops = Math.max(0, c.troops - 500);
+      if (maxTroops < 500) continue;
+      return {
+        kind: 'march-move',
+        cityId: c.id,
+        targetCityId: adjId,
+        picked: available.slice(0, 3).map((o) => o.id),
+        troops: Math.floor(maxTroops * 0.7),
+      };
+    }
+  }
+  return null;
+}
+
+/** Find a city with free officers that can be searched. */
+function pickBestSearch(): AutoAction | null {
+  if (G.cp <= 0) return null;
+  const my = citiesOf(G.playerFaction);
+  for (const c of my) {
+    const free = freeOfficersIn(c.id);
+    if (free.length === 0) continue;
+    const searchers = officersIn(c.id, G.playerFaction).filter((o) => !o.acted);
+    if (searchers.length === 0) continue;
+    return { kind: 'search', cityId: c.id, officerId: searchers[0].id };
+  }
+  return null;
+}
+
+/** Find the weakest (lowest level) officer that can be trained. */
+function pickBestTrain(): AutoAction | null {
+  if (G.cp <= 0) return null;
+  const my = officersOf(G.playerFaction)
+    .filter((o) => !o.acted)
+    .sort((a, b) => a.level - b.level || a.exp - b.exp);
+  if (my.length === 0) return null;
+  return { kind: 'train', officerId: my[0].id };
+}
+
+/** Build a priority-ordered queue of full-scope actions for the player faction. */
+function buildAutopilotQueue(allowRelaxed: boolean): AutoAction[] {
+  const q: AutoAction[] = [];
+  // P1 attack
+  const atk = pickBestAttack(allowRelaxed);
+  if (atk) q.push(atk);
+  // P2 move
+  const mv = pickBestMove();
+  if (mv) q.push(mv);
+  // P3 search (one)
+  const sr = pickBestSearch();
+  if (sr) q.push(sr);
+  // P4 train (one)
+  const tr = pickBestTrain();
+  if (tr) q.push(tr);
+  // P5 develop + recruit (A-scope)
+  const my = citiesOf(G.playerFaction);
   for (const c of my) {
     const cd = cityDef(c.id);
     const adjacentHostile = cd.adj.some((a) => G.cities[a].owner !== G.playerFaction);
-
-    // 1) famine guard — push farm to 2 first
-    if (c.farm < 2 && G.gold >= DEV_COST) q.push({ cityId: c.id, kind: 'farm' });
-    // 2) market for income baseline
-    if (c.market < 2 && c.farm >= 2 && G.gold >= DEV_COST) q.push({ cityId: c.id, kind: 'market' });
-    // 4) walls under 3 AND adjacent hostile → prioritize walls
-    if (adjacentHostile && c.walls < 3 && G.gold >= DEV_COST) q.push({ cityId: c.id, kind: 'walls' });
-    // 3) low troops → recruit
+    if (c.farm < 2 && G.gold >= DEV_COST) q.push({ kind: 'farm', cityId: c.id });
+    if (c.market < 2 && c.farm >= 2 && G.gold >= DEV_COST) q.push({ kind: 'market', cityId: c.id });
+    if (adjacentHostile && c.walls < 3 && G.gold >= DEV_COST) q.push({ kind: 'walls', cityId: c.id });
     if (c.troops < 8000 && G.gold >= RECRUIT_COST_GOLD && G.food >= RECRUIT_COST_FOOD) {
-      q.push({ cityId: c.id, kind: 'recruit' });
+      q.push({ kind: 'recruit', cityId: c.id });
     }
   }
-  // round-robin by kind so cities don't all spend CP on one track
-  q.sort((a, b) => (a.kind === b.kind ? 0 : a.kind < b.kind ? -1 : 1));
   return q;
 }
 
@@ -310,7 +417,8 @@ let autoStepIdx = 0;
 
 /** Print a one-line summary of the planned queue before the autopilot drain starts. */
 export function announceAutopilotPlan(): number {
-  const queue = buildAutopilotQueue();
+  const allowRelaxed = G.cp >= 4;
+  const queue = buildAutopilotQueue(allowRelaxed);
   autoStepIdx = 0;
   if (queue.length === 0) {
     bus.emit('log', `🤖 자동위임 계획: 명령할 행동 없음 (CP=${G.cp}, 금=${G.gold.toLocaleString()}, 식량=${G.food.toLocaleString()}).`, 'auto');
@@ -322,84 +430,118 @@ export function announceAutopilotPlan(): number {
     grouped.set(icon, (grouped.get(icon) ?? 0) + 1);
   }
   const parts = [...grouped.entries()].map(([k, n]) => `${k} ×${n}`).join(', ');
-  bus.emit('log', `🤖 자동위임 계획: ${queue.length}개 — ${parts}.`, 'auto');
+  const mode = allowRelaxed ? '공격적' : '보수적';
+  bus.emit('log', `🤖 자동위임 계획 (${mode}, CP=${G.cp}): ${queue.length}개 — ${parts}.`, 'auto');
   return queue.length;
+}
+
+/** Marker event so flow.ts knows a march battle resolved (then run autopilot again). */
+export function autopilotMarchResult(setup: BattleSetup, result: BattleResult, auto: boolean): void {
+  bus.emit('autopilotMarchResult', { setup, result, auto });
 }
 
 /**
  * Drain the autopilot queue one step at a time. Returns true if another step
- * can run (call again), false when done. Caller must gate with isBusy()/G.over
- * and emit 'refresh' between steps if it wants UI updates between actions.
+ * can run (call again), false when done. For march-attack, returns a
+ * 'pending' marker via the return object that flow.ts resolves and re-calls.
+ *
+ * When `silent=true` (autopilot mode), suppress in-modal popups from
+ * searchTalent by passing through the search route without showing the
+ * success modal — just log it instead.
  */
-export function stepPlayerAutopilot(): boolean {
+export function stepPlayerAutopilot(silent = false): boolean {
   if (!G || G.over) return false;
   if (G.cp <= 0) return false;
-  const queue = buildAutopilotQueue();
+  const allowRelaxed = G.cp >= 4;
+  const queue = buildAutopilotQueue(allowRelaxed);
   if (queue.length === 0) return false;
 
-  // Try first actionable item; if blocked (e.g. gold just drained), skip with reason.
   for (const a of queue) {
-    const c = G.cities[a.cityId];
-    const cd = cityDef(a.cityId);
+    const cityName = a.cityId ? cityDef(a.cityId).name : '';
     autoStepIdx++;
 
-    // snapshot before
-    const before = {
-      gold: G.gold, food: G.food,
-      farm: c.farm, market: c.market, walls: c.walls, troops: c.troops,
-    };
-
-    let ok = false;
-    if (a.kind === 'recruit') {
-      if (G.gold < RECRUIT_COST_GOLD) {
-        bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 스킵 — 금 부족 (${G.gold.toLocaleString()}<${RECRUIT_COST_GOLD}).`, 'auto');
-        continue;
-      }
-      if (G.food < RECRUIT_COST_FOOD) {
-        bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 스킵 — 식량 부족 (${G.food.toLocaleString()}<${RECRUIT_COST_FOOD}).`, 'auto');
-        continue;
-      }
-      ok = recruit(a.cityId);
-    } else {
-      const max = a.kind === 'walls' ? 5 : 6;
-      if (c[a.kind] >= max) {
-        bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 스킵 — 이미 최고 레벨(${max}).`, 'auto');
-        continue;
-      }
-      if (G.gold < DEV_COST) {
-        bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 스킵 — 금 부족 (${G.gold.toLocaleString()}<${DEV_COST}).`, 'auto');
-        continue;
-      }
-      ok = develop(a.cityId, a.kind);
+    if (a.kind === 'march-attack' && a.targetCityId && a.picked && a.troops !== undefined) {
+      const setup: BattleSetup = {
+        attacker: G.playerFaction,
+        defender: G.cities[a.targetCityId].owner,
+        cityId: a.targetCityId,
+        atkOfficers: a.picked,
+        defOfficers: officersIn(a.targetCityId, G.cities[a.targetCityId].owner).slice(0, 3).map((o) => o.id),
+        atkTroops: a.troops,
+        defTroops: G.cities[a.targetCityId].troops,
+        walls: G.cities[a.targetCityId].walls,
+        playerSide: 'atk',
+        sourceCityId: a.cityId!,
+      };
+      bus.emit('autopilotMarch', setup);
+      // Caller (flow.ts) will resolve and re-call stepPlayerAutopilot when done.
+      // We return false here to halt the chain; flow.ts re-enters after battle.
+      return false;
     }
 
-    if (!ok) {
-      // develop()/recruit() already emitted its own log; mark our index anyway.
-      bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 실패.`, 'auto');
+    if (a.kind === 'march-move' && a.targetCityId && a.picked && a.troops !== undefined) {
+      const src = G.cities[a.cityId!];
+      const before = src.troops;
+      moveOfficers(a.cityId!, a.targetCityId, a.picked, a.troops);
+      bus.emit('log', `🤖 #${autoStepIdx} ${cityName}→${cityDef(a.targetCityId).name} 🚩 이동 ✓ ${before.toLocaleString()}→${src.troops.toLocaleString()} (전선 보강) (남은 CP: ${G.cp}).`, 'auto');
+      return G.cp > 0;
+    }
+
+    if (a.kind === 'search' && a.officerId && a.cityId) {
+      const beforeGold = G.gold;
+      // Inline the search to avoid modal popup: same logic but log instead of modal
+      const searcher = G.officers[a.officerId];
+      searcher.acted = true;
+      G.cp--;
+      const free = freeOfficersIn(a.cityId);
+      const pol = effStat(searcher, 'pol');
+      if (free.length === 0) {
+        G.gold += 100;
+        bus.emit('log', `🤖 #${autoStepIdx} ${cityName} 🔍 수색 ✓ 인재 없음, 세금 +100 금 (총 변화 ${(G.gold - beforeGold).toLocaleString()}) (남은 CP: ${G.cp}).`, 'auto');
+      } else {
+        const target = free[Math.floor(Math.random() * free.length)];
+        const chance = 0.35 + pol / 200;
+        if (Math.random() < chance) {
+          target.faction = G.playerFaction;
+          bus.emit('log', `🤖 #${autoStepIdx} ${cityName} 🔍 수색 ✓ ${officerDef(target.id).name} 합류! (금 변화 ${(G.gold - beforeGold).toLocaleString()}) (남은 CP: ${G.cp}).`, 'auto');
+        } else {
+          bus.emit('log', `🤖 #${autoStepIdx} ${cityName} 🔍 수색 — ${officerDef(target.id).name} 영입 실패 (금 변화 ${(G.gold - beforeGold).toLocaleString()}) (남은 CP: ${G.cp}).`, 'auto');
+        }
+      }
+      return G.cp > 0;
+    }
+
+    if (a.kind === 'train' && a.officerId) {
+      const beforeGold = G.gold;
+      trainOfficer(a.officerId);
+      bus.emit('log', `🤖 #${autoStepIdx} ${officerDef(a.officerId).name} 🎯 조련 ✓ (금 변화 ${(G.gold - beforeGold).toLocaleString()}) (남은 CP: ${G.cp}).`, 'auto');
+      return G.cp > 0;
+    }
+
+    // ---- develop / recruit (A-scope, snapshot-based) ----
+    if (a.kind === 'recruit' && a.cityId) {
+      const c = G.cities[a.cityId];
+      if (G.gold < RECRUIT_COST_GOLD) { bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ⚔ 징병 ✗ 스킵 — 금 부족.`, 'auto'); continue; }
+      if (G.food < RECRUIT_COST_FOOD) { bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ⚔ 징병 ✗ 스킵 — 식량 부족.`, 'auto'); continue; }
+      const before = c.troops;
+      if (recruit(a.cityId)) {
+        bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ⚔ 징병 ✓ ${before.toLocaleString()}→${c.troops.toLocaleString()} (+${(c.troops - before).toLocaleString()}) · -200 금 · -300 식량 (남은 CP: ${G.cp}, 금: ${G.gold.toLocaleString()}).`, 'auto');
+        return G.cp > 0;
+      }
       continue;
     }
-
-    // diff and print
-    const after = {
-      gold: G.gold, food: G.food,
-      farm: c.farm, market: c.market, walls: c.walls, troops: c.troops,
-    };
-    const dGold = after.gold - before.gold;
-    const dFood = after.food - before.food;
-    const parts: string[] = [];
-    if (a.kind === 'recruit') {
-      parts.push(`병력 ${before.troops.toLocaleString()}→${after.troops.toLocaleString()} (+${(after.troops - before.troops).toLocaleString()})`);
-      parts.push(`-${(-dGold).toLocaleString()} 금`);
-      parts.push(`-${(-dFood).toLocaleString()} 식량`);
-    } else {
-      const lvBefore = (before as any)[a.kind] as number;
-      const lvAfter = (after as any)[a.kind] as number;
-      parts.push(`Lv${lvBefore}→Lv${lvAfter}`);
-      parts.push(`-${(-dGold).toLocaleString()} 금`);
+    if ((a.kind === 'farm' || a.kind === 'market' || a.kind === 'walls') && a.cityId) {
+      const c = G.cities[a.cityId];
+      const max = a.kind === 'walls' ? 5 : 6;
+      if (c[a.kind] >= max) { bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ${ACTION_ICON[a.kind]} ✗ 스킵 — 이미 최고 레벨(${max}).`, 'auto'); continue; }
+      if (G.gold < DEV_COST) { bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ${ACTION_ICON[a.kind]} ✗ 스킵 — 금 부족.`, 'auto'); continue; }
+      const before = c[a.kind];
+      if (develop(a.cityId, a.kind)) {
+        bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ${ACTION_ICON[a.kind]} ✓ Lv${before}→Lv${c[a.kind]} · -400 금 (남은 CP: ${G.cp}, 금: ${G.gold.toLocaleString()}).`, 'auto');
+        return G.cp > 0;
+      }
+      continue;
     }
-    bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✓ ${parts.join(' · ')} (남은 CP: ${G.cp}, 금: ${after.gold.toLocaleString()}).`, 'auto');
-
-    return G.cp > 0;
   }
   return false;
 }

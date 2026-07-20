@@ -1,18 +1,18 @@
 import { G, bus, saveGame, startPlayerTurn, fireEvents, checkVictory, getAutopilot, stepPlayerAutopilot, announceAutopilotPlan } from './state';
 import { runAiTurns } from './ai';
 import { autoResolve, applyBattleResult } from './battle/model';
-import { cityDef, faction } from './content';
+import { cityDef, faction, officerDef } from './content';
 import type { BattleSetup, BattleResult } from './types';
 
 /**
  * Turn sequencing: player acts → endTurn() → AI factions act (a defense
  * battle may interrupt) → month advances → income + events → player acts.
  *
- * Autopilot (A-scope: develop + recruit only):
- *   - getAutopilot() ON  → endTurn() drains the player action queue, then chains to AI.
- *   - getAutopilot() OFF → manual flow (user clicks cities).
- *   - Defense battles always run the AI side directly when autopilot is ON.
- *   - Combat / march / search / train stay manual (per A안 policy).
+ * Autopilot (full scope: develop + recruit + search + train + march):
+ *   - endTurn() drains the full action queue, then chains to AI.
+ *   - Defense battles always run auto-resolve directly when autopilot is ON.
+ *   - The march choice modal is skipped entirely under autopilot; we auto-resolve.
+ *   - Set `combatMode = 'auto' | 'manual'` per battle via setup if you want to override.
  */
 
 let aiResumeIndex = 0;
@@ -26,28 +26,65 @@ export function endTurn() {
   bus.emit('refresh');
   if (getAutopilot()) {
     announceAutopilotPlan();
-    bus.emit('log', '🤖 자동위임 시작 — 플레이어 행동을 위임합니다.', 'auto');
+    bus.emit('log', '🤖 자동위임 시작 — 모든 플레이어 행동을 위임합니다.', 'auto');
     runAutopilotTurn();
     return;
   }
   continueAi(0);
 }
 
-/** Drain the autopilot queue step by step, then chain to AI. */
+/**
+ * Drain the autopilot queue step by step, then chain to AI.
+ * - 'autopilotMarch' event halts us until flow.ts resolves the battle and re-calls.
+ * - setTimeout 220ms keeps UI readable (each step paints).
+ */
 function runAutopilotTurn() {
   if (!G || G.over || G.cp <= 0) { continueAi(0); return; }
-  // Each step runs synchronously; small delay so UI can paint between actions.
   setTimeout(() => {
     if (!busy || G.over) return;
-    const more = stepPlayerAutopilot();
+    const more = stepPlayerAutopilot(true);
     bus.emit('refresh');
-    if (more) runAutopilotTurn();
-    else {
-      bus.emit('log', '🤖 자동위임 종료 — AI 턴으로 넘어갑니다.', 'auto');
-      continueAi(0);
+    if (more) {
+      runAutopilotTurn();
+    } else {
+      // stepPlayerAutopilot returned false → either no actions OR a march was emitted
+      // The march handler (bus.on('autopilotMarch')) below resolves and re-calls.
+      // If no march is pending and we got here, we're done.
+      if (!pendingMarch) {
+        bus.emit('log', '🤖 자동위임 종료 — AI 턴으로 넘어갑니다.', 'auto');
+        continueAi(0);
+      }
     }
   }, 220);
 }
+
+let pendingMarch: BattleSetup | null = null;
+
+// Hand off march battles the autopilot queued — auto-resolve them silently and
+// re-enter the autopilot queue so the campaign keeps rolling.
+bus.on('autopilotMarch', (setup: BattleSetup) => {
+  if (!getAutopilot()) return; // safety
+  pendingMarch = setup;
+  const fromName = cityDef(setup.sourceCityId!).name;
+  const toName = cityDef(setup.cityId).name;
+  const ratio = setup.atkTroops * (1 + 60 / 150) / Math.max(1, setup.defTroops * (1 + 60 / 150) * (1 + setup.walls * 0.09));
+  bus.emit('log', `🤖 자동 출정: ${fromName}→${toName} 공격 (${setup.atkTroops.toLocaleString()} vs ${setup.defTroops.toLocaleString()}, 성벽 ${setup.walls}, 비율 ≈${ratio.toFixed(2)}) — 자동 결산.`, 'auto');
+  // Pay CP and mark officers (mirrors hud's marchDialog hostile path)
+  G.cp--;
+  for (const id of setup.atkOfficers) G.officers[id].acted = true;
+  const result = autoResolve(setup);
+  const won = result.winner === 'atk';
+  bus.emit('log', `🤖 자동 출정: ${fromName}→${toName} ${won ? '🏴 함락!' : '💥 공격 실패'} (${setup.atkTroops.toLocaleString()} vs ${setup.defTroops.toLocaleString()}, 성벽 ${setup.walls}, 비율 ≈${ratio.toFixed(2)}) — 아군 잔여 ${result.atkRemaining.toLocaleString()}, 적 잔여 ${result.defRemaining.toLocaleString()}.`, 'auto');
+  // IMPORTANT: applyBattleResult expects source troop to already be debited (hud convention).
+  // For autopilot, we *don't* pre-debit — so we add and then immediately subtract our sendTroops
+  // from source, then applyBattleResult's retreat+ path becomes a no-op for us (since atkRemaining
+  // is part of our sent troops, and we want them all back at source). Simpler: just debit before.
+  G.cities[setup.sourceCityId!].troops = Math.max(0, G.cities[setup.sourceCityId!].troops - setup.atkTroops);
+  applyBattleResult(setup, result);
+  bus.emit('refresh');
+  pendingMarch = null;
+  runAutopilotTurn();
+});
 
 function continueAi(startIndex: number) {
   const { pendingBattle, nextIndex } = runAiTurns(startIndex);
