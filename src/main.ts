@@ -3,7 +3,7 @@ import { BootScene } from './scenes/BootScene';
 import { MapScene } from './scenes/MapScene';
 import { BattleScene } from './scenes/BattleScene';
 import { content, faction } from './content';
-import { G, bus, newGame, loadGame, hasSave, startPlayerTurn, fireEvents } from './state';
+import { G, bus, newGame, loadGame, hasSave, startPlayerTurn, fireEvents, getAutopilot } from './state';
 import { initHud, showGameUi, log } from './hud';
 import type { BattleSetup } from './types';
 
@@ -66,7 +66,7 @@ bus.on('launchBattle', (setup: BattleSetup) => {
   document.getElementById('side')!.classList.add('hidden');
   bus.emit('citySelected', null);
   game.scene.sleep('Map');
-  game.scene.start('Battle', { setup });
+  game.scene.start('Battle', { setup, autopilot: getAutopilot() });
 });
 
 // ---------------- title screen ----------------
