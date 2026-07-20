@@ -42,17 +42,15 @@ export class BattleScene extends Phaser.Scene {
   private playerSide: 'atk' | 'def' = 'atk';
   private sel: BUnit | null = null;
   private mode: 'idle' | 'moved' | 'skill' = 'idle';
-  private battleAutopilot = false;  // ★ when true, player phase runs playerAiStep instead of waiting for input
   private hl: Phaser.GameObjects.Rectangle[] = [];
   private terrainSprites: Phaser.GameObjects.GameObject[] = [];
   private busyAnim = false;
 
   constructor() { super('Battle'); }
 
-  init(data: { setup: BattleSetup; autopilot?: boolean }) {
+  init(data: { setup: BattleSetup }) {
     this.setup = data.setup;
     this.playerSide = data.setup.playerSide === 'def' ? 'def' : 'atk';
-    this.battleAutopilot = !!data.autopilot;
     this.units = [];
     this.terrain = [];
     this.round = 1;
@@ -78,11 +76,6 @@ export class BattleScene extends Phaser.Scene {
     document.getElementById('battleTurn')!.classList.remove('hidden');
     document.getElementById('battleHud')!.classList.remove('hidden');
     bus.emit('music', 'battle');
-    if (this.battleAutopilot) {
-      bus.emit('log', '🤖 전투위임 — 아군 유닛을 자동 조작합니다.', 'auto');
-      this.updateTurnLabel();
-      this.time.delayedCall(450, () => this.playerAiStep());
-    }
   }
 
   // ============================== board ==============================
@@ -510,81 +503,7 @@ export class BattleScene extends Phaser.Scene {
     this.checkEnd();
     if (this.phase === 'player' && this.units.filter((x) => !x.dead && x.side === this.playerSide && !x.done).length === 0) {
       this.startEnemyPhase();
-    } else if (this.phase === 'player' && this.battleAutopilot) {
-      // ★ battle autopilot: chain next player action
-      this.time.delayedCall(360, () => this.playerAiStep());
     }
-  }
-
-  // ============================== player AI (battle autopilot) ==============================
-
-  /** Find the player unit with the lowest HP ratio that's still actionable. */
-  private pickNextPlayerUnit(): BUnit | null {
-    return this.units
-      .filter((u) => !u.dead && u.side === this.playerSide && !u.done)
-      .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0] || null;
-  }
-
-  /** Move toward a target cell, then if adjacent + in range attack; else end turn for this unit. */
-  private playerMoveAndMaybeAttack(u: BUnit, foe: BUnit): void {
-    const cells = this.reachable(u);
-    if (cells.length === 0) { u.done = true; this.time.delayedCall(120, () => this.playerAiStep()); return; }
-    // prefer cell that is (a) in attack range AND (b) closest to foe
-    const scored = cells.map((c) => {
-      const distAfter = Math.abs(c.x - foe.gx) + Math.abs(c.y - foe.gy);
-      const inRangeAfter = distAfter <= this.attackRange(u);
-      return { c, distAfter, inRangeAfter };
-    });
-    scored.sort((a, b) => {
-      if (a.inRangeAfter !== b.inRangeAfter) return a.inRangeAfter ? -1 : 1;  // in-range first
-      return a.distAfter - b.distAfter;  // then closest
-    });
-    const best = scored[0];
-    u.gx = best.c.x; u.gy = best.c.y;
-    this.tweens.add({
-      targets: u.sprite, x: OX + best.c.x * CELL + CELL / 2, y: OY + best.c.y * CELL + CELL / 2, duration: 220,
-      onComplete: () => {
-        u.sprite.setDepth(30 + u.gy);
-        const target = this.units.filter((x) => !x.dead && x.side !== u.side && this.dist(u, x) <= this.attackRange(u)).sort((a, b) => a.hp - b.hp)[0];
-        if (target) this.doAttack(u, target);
-        else { u.done = true; this.time.delayedCall(160, () => this.playerAiStep()); }
-      },
-    });
-  }
-
-  private playerAiStep(): void {
-    if (!this.battleAutopilot || this.phase !== 'player') return;
-    if (this.busyAnim) { this.time.delayedCall(180, () => this.playerAiStep()); return; }
-    const u = this.pickNextPlayerUnit();
-    if (!u) { this.startEnemyPhase(); return; }
-    const foes = this.units.filter((x) => !x.dead && x.side !== this.playerSide);
-    if (foes.length === 0) { this.startEnemyPhase(); return; }
-
-    // 1) skill on a target if in range and not on cooldown (50% chance to prefer, else attack)
-    const sk = skillDef(u.skill);
-    if (u.cd <= 0 && (sk.type === 'damage' || sk.type === 'intdamage' || sk.type === 'duel' || sk.type === 'buff')) {
-      const skillFoes = foes.filter((f) => this.dist(u, f) <= sk.range);
-      if (skillFoes.length > 0 && Math.random() < 0.45) {
-        const target = skillFoes.sort((a, b) => a.hp - b.hp)[0];
-        bus.emit('log', `🤖 ${u.name} ✦ ${sk.name} 발동!`, 'auto');
-        this.execSkill(u, sk, target.gx, target.gy);
-        this.time.delayedCall(720, () => this.playerAiStep());
-        return;
-      }
-    }
-
-    // 2) attack if in range — pick lowest-HP foe
-    const inRange = foes.filter((f) => this.dist(u, f) <= this.attackRange(u)).sort((a, b) => a.hp - b.hp);
-    if (inRange.length > 0) {
-      bus.emit('log', `🤖 ${u.name} ⚔ 공격!`, 'auto');
-      this.doAttack(u, inRange[0]);
-      return;
-    }
-
-    // 3) move toward nearest foe
-    const nearest = foes.sort((a, b) => this.dist(u, a) - this.dist(u, b))[0];
-    bus.emit('log', `🤖 ${u.name} 🚩 이동`, 'auto');
-    this.playerMoveAndMaybeAttack(u, nearest);
   }
 
   // ============================== enemy AI ==============================
@@ -715,14 +634,8 @@ export class BattleScene extends Phaser.Scene {
 
   private updateTurnLabel() {
     const el = document.getElementById('battleTurn')!;
-    const base = this.phase === 'player'
-      ? `제 ${this.round}/${MAX_ROUNDS} 라운드 — 아군 행동`
-      : `제 ${this.round} 라운드 — 적군 행동`;
-    const auto = this.battleAutopilot && this.phase === 'player' ? ' 🤖 위임 중' : '';
-    el.textContent = base + auto;
-    el.style.color = this.phase === 'player'
-      ? (this.battleAutopilot ? '#9cc1ff' : '#ffe9b0')
-      : '#ff8a70';
+    el.textContent = this.phase === 'player' ? `제 ${this.round}/${MAX_ROUNDS} 라운드 — 아군 행동` : `제 ${this.round} 라운드 — 적군 행동`;
+    el.style.color = this.phase === 'player' ? '#ffe9b0' : '#ff8a70';
   }
 
   private updateHud() {
