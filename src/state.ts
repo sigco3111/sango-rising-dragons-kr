@@ -276,6 +276,10 @@ interface AutoAction {
   kind: 'farm' | 'market' | 'walls' | 'recruit';
 }
 
+const ACTION_ICON: Record<AutoAction['kind'], string> = {
+  farm: '🌾 개간', market: '🪙 통상', walls: '🧱 축성', recruit: '⚔ 징병',
+};
+
 /** Build a priority-ordered queue of A-scope actions for the player faction. */
 function buildAutopilotQueue(): AutoAction[] {
   const my = citiesOf(G.playerFaction);
@@ -302,6 +306,26 @@ function buildAutopilotQueue(): AutoAction[] {
   return q;
 }
 
+let autoStepIdx = 0;
+
+/** Print a one-line summary of the planned queue before the autopilot drain starts. */
+export function announceAutopilotPlan(): number {
+  const queue = buildAutopilotQueue();
+  autoStepIdx = 0;
+  if (queue.length === 0) {
+    bus.emit('log', `🤖 자동위임 계획: 명령할 행동 없음 (CP=${G.cp}, 금=${G.gold.toLocaleString()}, 식량=${G.food.toLocaleString()}).`, 'auto');
+    return 0;
+  }
+  const grouped = new Map<string, number>();
+  for (const a of queue) {
+    const icon = ACTION_ICON[a.kind];
+    grouped.set(icon, (grouped.get(icon) ?? 0) + 1);
+  }
+  const parts = [...grouped.entries()].map(([k, n]) => `${k} ×${n}`).join(', ');
+  bus.emit('log', `🤖 자동위임 계획: ${queue.length}개 — ${parts}.`, 'auto');
+  return queue.length;
+}
+
 /**
  * Drain the autopilot queue one step at a time. Returns true if another step
  * can run (call again), false when done. Caller must gate with isBusy()/G.over
@@ -309,16 +333,73 @@ function buildAutopilotQueue(): AutoAction[] {
  */
 export function stepPlayerAutopilot(): boolean {
   if (!G || G.over) return false;
-  // 1) defend first if any enemy battle is pending for player — handled in flow.ts via promptDefense
+  if (G.cp <= 0) return false;
   const queue = buildAutopilotQueue();
-  if (queue.length === 0 || G.cp <= 0) return false;
-  // Try first actionable item; if blocked (e.g. gold just drained), skip it.
+  if (queue.length === 0) return false;
+
+  // Try first actionable item; if blocked (e.g. gold just drained), skip with reason.
   for (const a of queue) {
+    const c = G.cities[a.cityId];
+    const cd = cityDef(a.cityId);
+    autoStepIdx++;
+
+    // snapshot before
+    const before = {
+      gold: G.gold, food: G.food,
+      farm: c.farm, market: c.market, walls: c.walls, troops: c.troops,
+    };
+
+    let ok = false;
     if (a.kind === 'recruit') {
-      if (recruit(a.cityId)) return G.cp > 0;
+      if (G.gold < RECRUIT_COST_GOLD) {
+        bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 스킵 — 금 부족 (${G.gold.toLocaleString()}<${RECRUIT_COST_GOLD}).`, 'auto');
+        continue;
+      }
+      if (G.food < RECRUIT_COST_FOOD) {
+        bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 스킵 — 식량 부족 (${G.food.toLocaleString()}<${RECRUIT_COST_FOOD}).`, 'auto');
+        continue;
+      }
+      ok = recruit(a.cityId);
+    } else {
+      const max = a.kind === 'walls' ? 5 : 6;
+      if (c[a.kind] >= max) {
+        bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 스킵 — 이미 최고 레벨(${max}).`, 'auto');
+        continue;
+      }
+      if (G.gold < DEV_COST) {
+        bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 스킵 — 금 부족 (${G.gold.toLocaleString()}<${DEV_COST}).`, 'auto');
+        continue;
+      }
+      ok = develop(a.cityId, a.kind);
+    }
+
+    if (!ok) {
+      // develop()/recruit() already emitted its own log; mark our index anyway.
+      bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✗ 실패.`, 'auto');
       continue;
     }
-    if (develop(a.cityId, a.kind)) return G.cp > 0;
+
+    // diff and print
+    const after = {
+      gold: G.gold, food: G.food,
+      farm: c.farm, market: c.market, walls: c.walls, troops: c.troops,
+    };
+    const dGold = after.gold - before.gold;
+    const dFood = after.food - before.food;
+    const parts: string[] = [];
+    if (a.kind === 'recruit') {
+      parts.push(`병력 ${before.troops.toLocaleString()}→${after.troops.toLocaleString()} (+${(after.troops - before.troops).toLocaleString()})`);
+      parts.push(`-${(-dGold).toLocaleString()} 금`);
+      parts.push(`-${(-dFood).toLocaleString()} 식량`);
+    } else {
+      const lvBefore = (before as any)[a.kind] as number;
+      const lvAfter = (after as any)[a.kind] as number;
+      parts.push(`Lv${lvBefore}→Lv${lvAfter}`);
+      parts.push(`-${(-dGold).toLocaleString()} 금`);
+    }
+    bus.emit('log', `🤖 #${autoStepIdx} ${cd.name} ${ACTION_ICON[a.kind]} ✓ ${parts.join(' · ')} (남은 CP: ${G.cp}, 금: ${after.gold.toLocaleString()}).`, 'auto');
+
+    return G.cp > 0;
   }
   return false;
 }

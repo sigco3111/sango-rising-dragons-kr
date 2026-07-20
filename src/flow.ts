@@ -1,4 +1,4 @@
-import { G, bus, saveGame, startPlayerTurn, fireEvents, checkVictory, getAutopilot, stepPlayerAutopilot } from './state';
+import { G, bus, saveGame, startPlayerTurn, fireEvents, checkVictory, getAutopilot, stepPlayerAutopilot, announceAutopilotPlan } from './state';
 import { runAiTurns } from './ai';
 import { autoResolve, applyBattleResult } from './battle/model';
 import { cityDef, faction } from './content';
@@ -25,7 +25,8 @@ export function endTurn() {
   busy = true;
   bus.emit('refresh');
   if (getAutopilot()) {
-    bus.emit('log', '🤖 자동위임 — 플레이어 행동을 위임합니다.', 'auto');
+    announceAutopilotPlan();
+    bus.emit('log', '🤖 자동위임 시작 — 플레이어 행동을 위임합니다.', 'auto');
     runAutopilotTurn();
     return;
   }
@@ -41,8 +42,11 @@ function runAutopilotTurn() {
     const more = stepPlayerAutopilot();
     bus.emit('refresh');
     if (more) runAutopilotTurn();
-    else continueAi(0);
-  }, 60);
+    else {
+      bus.emit('log', '🤖 자동위임 종료 — AI 턴으로 넘어갑니다.', 'auto');
+      continueAi(0);
+    }
+  }, 220);
 }
 
 function continueAi(startIndex: number) {
@@ -60,7 +64,7 @@ function promptDefense(setup: BattleSetup) {
   const city = cityDef(setup.cityId).name;
   // Autopilot ON → skip the prompt and auto-resolve the defense directly.
   if (getAutopilot()) {
-    bus.emit('log', `🤖 자동위임 — ${city} 방어를 자동 결산합니다.`, 'auto');
+    bus.emit('log', `🤖 자동위임 — ${city} 방어 (적 ${setup.atkTroops.toLocaleString()} vs 아군 ${setup.defTroops.toLocaleString()}, 성벽 ${setup.walls}) 자동 결산.`, 'auto');
     const r = autoResolve(setup);
     reportBattle(setup, r);
     applyBattleResult(setup, r);
