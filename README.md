@@ -3,15 +3,24 @@
 > **三国・起龍 (Romance of the Three Kingdoms)**
 > [ryantsai/sango-rising-dragons](https://github.com/ryantsai/sango-rising-dragons)의 한국어 한글화 포크
 
-[한글화 포크 저장소](https://github.com/sigco3111/sango-rising-dragons-kr) · [🎮 라이브 데모](https://sango-rising-dragons.vercel.app)
-
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000?logo=vercel&logoColor=white)](https://sango-rising-dragons.vercel.app)
 [![GitHub](https://img.shields.io/badge/GitHub-sigco3111-181717?logo=github)](https://github.com/sigco3111/sango-rising-dragons-kr)
-[![한글화](https://img.shields.io/badge/한글화-v0.3-blue)](https://github.com/sigco3111/sango-rising-dragons-kr)
+[![한글화](https://img.shields.io/badge/한글화-v0.5-blue)](https://github.com/sigco3111/sango-rising-dragons-kr)
+[![자동위임](https://img.shields.io/badge/자동위임-AI-purple)](https://sango-rising-dragons.vercel.app)
 [![License](https://img.shields.io/badge/license-학습_/_연구-yellow)](#-라이선스)
 
 西元 190년, 한실 기울다. 군웅이 일어나 천하를 다투는 난세 —
 **한글화된 인터페이스**로 클래식 3국지 전략/턴제 전투 게임을 즐기세요.
+
+## ✨ v0.5 업데이트 (자동위임 + 밸런스 + 안정화)
+
+| 항목 | 내용 |
+|---|---|
+| 🤖 **풀 자동위임** | 상단 토글 ON → 매 턴 모든 행동을 AI가 위임 |
+| 🎯 **위임 AI C안** | 출정 점수화 (전력비 + 적 약점 보너스 + 체인 보너스), 부대 합치기 |
+| ⚖️ **밸런스 C안** | 시작 자원 여유 + 수도 성벽+1 + 재야 장수 무료 영입, 적 공성 약화 |
+| ⌨️ **Enter 단축키** | 턴 종료 단축키 (모달/입력 필드 자동 무시) |
+| 🛡 **NaN 안전망** | troopsHome amount/v 양쪽 지원 + 세이브 자동 정화 |
 
 ## ✨ v0.3 한글화 현황
 
@@ -23,7 +32,7 @@
 | 장수 별칭 (49명) | ✅ 완료 | 100% | 패왕/맹장/참모 등 |
 | 장수 풀네임 (49명) | ✅ 완료 | 100% | "조조 (패왕)" 형식 |
 | 진영/군주 (11개) | ✅ 완료 | 100% | 위/촉/오/동탁 등 |
-| 진영 한자 심볼 | ✅ 완료 | 100% | 위/촉/오 한자 |
+| 진영 한자 심볼 → 한국어 | ✅ 완료 | 100% | 위/촉/오 등 1글자 (v0.4 fix) |
 | 진영 시그니처 | ✅ 완료 | 100% | 천하를 다스릴 자 등 |
 | 진영 시작 위치 | ✅ 완료 | 100% | 진류/성도/오군 |
 | 진영 설명 | ✅ 완료 | 100% | ko/factions.json desc |
@@ -36,6 +45,9 @@
 | 액션 버튼 hover 도움말 | ✅ 완료 | 100% | 효과 설명 풍성 |
 | 출정 모달 (별칭/남겨둘 병력) | ✅ 완료 | 100% | 보강됨 |
 | Noto Sans KR 폰트 | ✅ 완료 | 100% | Google Fonts CDN |
+| 사이드패널 병력 NaN 가드 | ✅ 완료 | 100% | fmtNum() fallback (v0.4) |
+| troopsHome amount/v 호환 | ✅ 완료 | 100% | 황건 토벌 / 자연 치유 NaN fix (v0.5) |
+| 세이브 자동 정화 | ✅ 완료 | 100% | 로드 시 NaN troops → 1,000 복구 (v0.5) |
 
 > **원작자 라이선스 확인 필요** — 원본 저장소에 LICENSE 파일이 명시되지 않았습니다.
 > 포크는 학습/연구 목적 권장. 상업적 사용은 원작자(`@ryantsai`)에게 허락 받으세요.
@@ -50,12 +62,25 @@
 - **자동 저장/계속**: 매 턴 localStorage 자동 저장
 - **🤖 풀 자동위임 (Autopilot)**: 상단 토글 ON → 매 턴 모든 행동을 AI가 위임
   - 우선순위: 적지 출정 → 부대 재배치 → 재야 수색 → 장수 조련 → 개발/징병
-  - 출정 점수: 전력 비율 + **적 약점 보너스**(벽 낮음/병력 적음) + **체인 보너스**(공격 후 인접 적 추가 가능)
+  - 출정 점수화: 전력 비율 + **적 약점 보너스**(벽 낮음/병력 적음) + **체인 보너스**(공격 후 인접 적 추가 가능)
   - 부대 합치기: 약한 도시(troops<5000)에서 강한 인접 아군 도시로 자동 이동
   - 출정 강도: CP 충분할 땐 공격적(ratio>1.0), 부족할 땐 보수적(ratio>1.4, AI와 동일)
   - 방어전 자동 결산, 출정 모달 생략 → **턴 종료만 누르면 엔딩까지 자동 진행**
   - 토글 상태는 localStorage에 영속 저장 (새로고침 후에도 유지)
+- **⌨️ 키보드 단축키**: Enter = 턴 종료 (모달/입력 필드 자동 무시)
+- **🛡 NaN 안전망**: troopsHome은 `amount`/`v` 양쪽 호환, 세이브 로드 시 자동 정화 (`__sangoSaveHeal` 콘솔 훅)
 - **모드 친화적**: `public/data/ko/`에 JSON만 추가하면 신규 콘텐츠 반영
+
+## ⚖️ 밸런스 (C안)
+
+| 항목 | 값 |
+|---|---|
+| 시작 자원 | 금 1,500 / 식량 3,500 |
+| 개발 비용 | 300 금 |
+| 징병 비용 / 보너스 | 150 금 + 200 식량 / +2,000 병력 |
+| 시작 보너스 | 수도 성벽 +1 (최대 5), 재야 장수 1명 무료 영입 |
+| 적 AI 공성 threshold | ratio > 1.7 (이전 1.45) |
+| 적 AI 공성 빈도 | 40% (이전 65%) |
 
 ## 🚀 빠른 시작
 
@@ -111,7 +136,7 @@ Vercel 배포 시간: **1~2분** (cold start 기준)
 
 ```
 sango-rising-dragons/
- ├── index.html              # 메인 HTML (lang="ko")
+├── index.html              # 메인 HTML (lang="ko")
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.*           # Vite 설정 (생성 시)
@@ -132,21 +157,23 @@ sango-rising-dragons/
 │   │       ├── cities.json  (desc 추가)
 │   │       ├── officers.json (alias, full_name 추가)
 │   │       ├── factions.json (symbol, slogan, start_city 추가)
-│   │       ├── events.json
+│   │       ├── events.json  (v: amount 호환)
 │   │       ├── items.json
 │   │       └── skills.json
 ├── src/
 │   ├── main.ts            # 진입점
 │   ├── content.ts         # 데이터 로더 (base → ko 머지)
-│   ├── hud.ts             # UI (한국어 적용 완료, 풍성화)
-│   ├── state.ts           # 게임 상태
-│   ├── flow.ts            # 게임 흐름
+│   ├── hud.ts             # UI (한국어 적용 완료, 풍성화, 자동위임 토글, Enter 단축키)
+│   ├── state.ts           # 게임 상태 + 자동위임 결정 큐 + NaN 안전망
+│   ├── flow.ts            # 게임 흐름 (endTurn / 방어전 자동 결산)
 │   ├── types.ts
 │   ├── scenes/
 │   │   ├── BootScene.ts
-│   │   ├── MapScene.ts    # 전략 맵
+│   │   ├── MapScene.ts    # 전략 맵 (한국어 깃발 symbol)
 │   │   └── BattleScene.ts # 전술 전투
-│   ├── ai.ts
+│   ├── battle/
+│   │   └── model.ts       # armyPower, autoResolve, applyBattleResult
+│   ├── ai.ts              # AI 진영 행동 (C안: threshold 1.7, 빈도 40%)
 │   └── ...
 ├── screenshots/           # 게임 스크린샷 (v0.x 시리즈)
 ├── docs/                   # 추가 문서
@@ -245,7 +272,7 @@ EOF
 > [천하가 내 이름을 알게 되리라.]
 
 ### 사이드 패널 (아군 도시)
-> **성도 개관** (예: 陳留)
+> **성도 개관** (예: 진류)
 >
 > 🏴 1/20 · 목표 12개 성도 · 6,000 총병력 · 2 장수
 >
@@ -262,7 +289,7 @@ EOF
 - **빌드 도구**: [Vite 6](https://vitejs.dev), [TypeScript 5](https://www.typescriptlang.org)
 - **배포**: [Vercel](https://vercel.com)
 - **아트/음향**: [Kenney.nl](https://kenney.nl) (CC0)
-- **한글화**: [sigco3111](https://github.com/sigco3111)
+- **한글화 + 자동위임 + 밸런스**: [sigco3111](https://github.com/sigco3111)
 
 ## 📄 라이선스
 
@@ -280,7 +307,9 @@ EOF
 
 ## 📝 버전 히스토리
 
-- **v0.3** (현재) — UI 풍성화 + manifest packs 순서 수정
+- **v0.5** (현재) — 풀 자동위임 + 위임 AI C안 + 밸런스 C안 + Enter 단축키 + NaN 안전망
+- **v0.4** — 자동위임 토글 + 위임 로그 구체화 + 한자 깃발 → 한국어 symbol + 사이드패널 NaN 가드 (`fmtNum`)
+- **v0.3** — UI 풍성화 + manifest packs 순서 수정
 - **v0.2** — 이벤트 풍성화 + 진영/장수/도시 추가 정보
 - **v0.1** — 초기 한글화 (도시/장수/진영 100%)
 
