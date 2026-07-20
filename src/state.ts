@@ -99,10 +99,47 @@ export function saveGame() {
   localStorage.setItem(SAVE_KEY, JSON.stringify(G));
 }
 export function hasSave() { return !!localStorage.getItem(SAVE_KEY); }
+
+/** Coerce any non-finite numeric value in the saved game to a safe fallback. */
+function sanitizeGameState(g: any): void {
+  if (!g) return;
+  const safe = (v: any, fallback = 0) => Number.isFinite(Number(v)) ? Number(v) : fallback;
+  g.gold = safe(g.gold, 0);
+  g.food = safe(g.food, 0);
+  g.cp = safe(g.cp, 0);
+  g.turn = safe(g.turn, 1);
+  if (g.aiGold) for (const k of Object.keys(g.aiGold)) g.aiGold[k] = safe(g.aiGold[k], 800);
+  if (g.cities) {
+    for (const id of Object.keys(g.cities)) {
+      const c = g.cities[id];
+      c.troops = safe(c.troops, 1000);  // NaN troops → 1,000 default
+      c.farm = safe(c.farm, 0);
+      c.market = safe(c.market, 0);
+      c.walls = safe(c.walls, 0);
+    }
+  }
+  if (g.officers) {
+    for (const id of Object.keys(g.officers)) {
+      const o = g.officers[id];
+      if (typeof o.level !== 'number' || !Number.isFinite(o.level)) o.level = 1;
+      if (typeof o.exp !== 'number' || !Number.isFinite(o.exp)) o.exp = 0;
+    }
+  }
+}
 export function loadGame(): boolean {
   const raw = localStorage.getItem(SAVE_KEY);
   if (!raw) return false;
-  try { G = JSON.parse(raw); return true; } catch { return false; }
+  try {
+    G = JSON.parse(raw);
+    sanitizeGameState(G);
+    // Migrate corrupted troops by reporting what was fixed (one-time via console)
+    try {
+      const cities = G.cities || {};
+      const corrupted = Object.values(cities).filter((c: any) => !Number.isFinite(c?.troops)).length;
+      if (corrupted > 0) (window as any).__sangoSaveHeal = { fixedCities: corrupted, when: new Date().toISOString() };
+    } catch {}
+    return true;
+  } catch { return false; }
 }
 
 // ---------- economy / turn flow ----------
@@ -570,7 +607,11 @@ export function applyEffects(effects: { op: string; v: any; to?: string; amount?
       case 'food': G.food += e.v; break;
       case 'troopsHome': {
         const home = citiesOf(G.playerFaction)[0];
-        if (home) home.troops = Math.max(200, home.troops + e.v);
+        // ★ accept both `v` (base convention) and `amount` (Korean pack convention) and any numeric fallback
+        const delta = Number((e as any).v ?? (e as any).amount ?? 0);
+        if (home && Number.isFinite(delta) && delta !== 0) {
+          home.troops = Math.max(200, home.troops + delta);
+        }
         break;
       }
       case 'expAll': for (const o of officersOf(G.playerFaction)) gainExp(o, e.v); break;

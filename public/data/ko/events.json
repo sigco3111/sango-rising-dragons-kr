@@ -53,7 +53,7 @@
           },
           {
             "op": "troopsHome",
-            "amount": 1500
+            "v": 1500
           }
         ]
       },
@@ -157,7 +157,7 @@
         "effects": [
           {
             "op": "troopsHome",
-            "amount": -2000
+            "v": -2000
           }
         ]
       }
