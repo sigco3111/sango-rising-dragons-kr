@@ -50,6 +50,8 @@
 - **자동 저장/계속**: 매 턴 localStorage 자동 저장
 - **🤖 풀 자동위임 (Autopilot)**: 상단 토글 ON → 매 턴 모든 행동을 AI가 위임
   - 우선순위: 적지 출정 → 부대 재배치 → 재야 수색 → 장수 조련 → 개발/징병
+  - 출정 점수: 전력 비율 + **적 약점 보너스**(벽 낮음/병력 적음) + **체인 보너스**(공격 후 인접 적 추가 가능)
+  - 부대 합치기: 약한 도시(troops<5000)에서 강한 인접 아군 도시로 자동 이동
   - 출정 강도: CP 충분할 땐 공격적(ratio>1.0), 부족할 땐 보수적(ratio>1.4, AI와 동일)
   - 방어전 자동 결산, 출정 모달 생략 → **턴 종료만 누르면 엔딩까지 자동 진행**
   - 토글 상태는 localStorage에 영속 저장 (새로고침 후에도 유지)
@@ -109,7 +111,7 @@ Vercel 배포 시간: **1~2분** (cold start 기준)
 
 ```
 sango-rising-dragons/
-├── index.html              # 메인 HTML (lang="ko")
+ ├── index.html              # 메인 HTML (lang="ko")
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.*           # Vite 설정 (생성 시)

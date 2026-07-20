@@ -89,10 +89,22 @@ export function newGame(playerFaction: string) {
   for (const f of content.factions) aiGold[f.id] = 800;
 
   G = {
-    turn: 1, playerFaction, gold: 1000, food: 2000, cp: 0,
+    turn: 1, playerFaction, gold: 1500, food: 3500, cp: 0,
     cities, officers, firedEvents: [], aiGold,
   };
   G.cp = maxCp();
+
+  // ★ C안 시작 보너스 1: 플레이어 수도 성벽 +1
+  const capital = citiesOf(G.playerFaction).find((c) => cityDef(c.id).capital);
+  if (capital) capital.walls = Math.min(5, capital.walls + 1);
+
+  // ★ C안 시작 보너스 2: 수도에 재야 장수 1명 무료 영입 (없으면 다른 도시에서)
+  const freeList = officersOf('').filter((o) => !officerDef(o.id).hidden);
+  if (freeList.length > 0) {
+    const gift = freeList[Math.floor(Math.random() * freeList.length)];
+    gift.faction = G.playerFaction;
+    gift.city = capital?.id ?? freeList[0].city;
+  }
 }
 
 export function saveGame() {
@@ -185,10 +197,10 @@ export function spendCp(n = 1): boolean {
   return true;
 }
 
-export const DEV_COST = 400;
-export const RECRUIT_COST_GOLD = 200;
-export const RECRUIT_COST_FOOD = 300;
-export const RECRUIT_AMOUNT = 1500;
+export const DEV_COST = 300;
+export const RECRUIT_COST_GOLD = 150;
+export const RECRUIT_COST_FOOD = 200;
+export const RECRUIT_AMOUNT = 2000;
 
 export function develop(cityId: string, kind: 'farm' | 'market' | 'walls'): boolean {
   const c = G.cities[cityId];
@@ -340,12 +352,17 @@ const ACTION_ICON: Record<AutoAction['kind'], string> = {
 const ATTACK_RATIO_STRICT = 1.4;  // AI와 동일 강도
 const ATTACK_RATIO_RELAXED = 1.0;  // CP 충분할 때 (조련 안 하는 절약 모드)
 
-/** Find best offensive target across all player cities. Returns null if none strong enough. */
+/**
+ * Pick best offensive target. Score combines:
+ *   - power ratio (higher = safer)
+ *   - target weakness bonus (low walls + low troops = easier)
+ *   - chain bonus (if our remaining troops after this fight can take ANOTHER adjacent enemy)
+ */
 function pickBestAttack(allowRelaxed: boolean): AutoAction | null {
   if (G.cp <= 0) return null;
   const my = citiesOf(G.playerFaction);
   const threshold = allowRelaxed ? ATTACK_RATIO_RELAXED : ATTACK_RATIO_STRICT;
-  let best: { from: string; to: string; ratio: number; picked: string[]; troops: number } | null = null;
+  let best: { from: string; to: string; score: number; picked: string[]; troops: number } | null = null;
 
   for (const c of my) {
     if (c.troops < 6000) continue;
@@ -363,8 +380,28 @@ function pickBestAttack(allowRelaxed: boolean): AutoAction | null {
       const myPow = armyPower(sendTroops, picked);
       const defPow = armyPower(t.troops, defOff, t.walls);
       const ratio = myPow / Math.max(1, defPow);
-      if (ratio >= threshold && (!best || ratio > best.ratio)) {
-        best = { from: c.id, to: adjId, ratio, picked, troops: sendTroops };
+      if (ratio < threshold) continue;
+
+      // ★ weakness bonus: low walls & low troops = easier kill
+      const weaknessBonus = (5 - t.walls) * 0.15 + (1 - Math.min(1, t.troops / 12000)) * 0.5;
+
+      // ★ chain bonus: estimate survivors (autoResolve puts ~50% through) and check if
+      //   we could take a SECOND adjacent enemy right after this one
+      const estRemaining = Math.floor(sendTroops * 0.5);
+      let chainBonus = 0;
+      const adjCd = cityDef(adjId);
+      for (const adj2 of adjCd.adj) {
+        if (adj2 === c.id) continue;
+        const t2 = G.cities[adj2];
+        if (t2.owner === G.playerFaction) continue;
+        const off2 = officersIn(adj2, t2.owner).map((o) => o.id);
+        const r2pow = armyPower(estRemaining, picked) / Math.max(1, armyPower(t2.troops, off2, t2.walls));
+        if (r2pow > 1.4) chainBonus += 0.6;  // we can chain
+      }
+
+      const score = ratio + weaknessBonus + chainBonus;
+      if (!best || score > best.score) {
+        best = { from: c.id, to: adjId, score, picked, troops: sendTroops };
       }
     }
   }
@@ -372,15 +409,23 @@ function pickBestAttack(allowRelaxed: boolean): AutoAction | null {
   return { kind: 'march-attack', cityId: best.from, targetCityId: best.to, picked: best.picked, troops: best.troops };
 }
 
-/** Move an officer-bearing stack toward an adjacent enemy (non-attacking) to consolidate. */
+/**
+ * Move troops between player cities to consolidate stacks.
+ * Priority:
+ *   1) Frontline reinforcement (move toward enemy front) — keep current logic
+ *   2) General consolidation — move from a city with low troops (<5000) to one with
+ *      higher troops + adjacent, so we have fewer weak cities
+ */
 function pickBestMove(): AutoAction | null {
   if (G.cp <= 0) return null;
   const my = citiesOf(G.playerFaction);
+  if (my.length < 2) return null;
+
+  // 1) frontline reinforcement (existing)
   for (const c of my) {
     const cd = cityDef(c.id);
     const available = officersIn(c.id, G.playerFaction).filter((o) => !o.acted);
     if (available.length === 0) continue;
-    // find adjacent friendly city that itself borders an enemy (front-line)
     for (const adjId of cd.adj) {
       if (G.cities[adjId].owner !== G.playerFaction) continue;
       const adjCd = cityDef(adjId);
@@ -396,6 +441,34 @@ function pickBestMove(): AutoAction | null {
         troops: Math.floor(maxTroops * 0.7),
       };
     }
+  }
+
+  // 2) consolidate weak cities into stronger adjacent friendly cities
+  //    Prefer the city with biggest absolute difference AND adjacent friend
+  let bestMerge: { from: string; to: string; picked: string[]; troops: number; delta: number } | null = null;
+  for (const weak of my.filter((c) => c.troops < 5000)) {
+    const wcd = cityDef(weak.id);
+    const available = officersIn(weak.id, G.playerFaction).filter((o) => !o.acted);
+    if (available.length === 0) continue;
+    for (const adjId of wcd.adj) {
+      if (G.cities[adjId].owner !== G.playerFaction) continue;
+      const strong = G.cities[adjId];
+      const delta = strong.troops - weak.troops;
+      if (delta <= 1000) continue;  // not worth merging
+      const moveTroops = Math.max(500, Math.floor(weak.troops * 0.4));
+      if (moveTroops > weak.troops - 200) continue;  // keep minimum garrison
+      if (!bestMerge || delta > bestMerge.delta) {
+        bestMerge = {
+          from: weak.id, to: adjId,
+          picked: available.slice(0, 3).map((o) => o.id),
+          troops: moveTroops,
+          delta,
+        };
+      }
+    }
+  }
+  if (bestMerge) {
+    return { kind: 'march-move', cityId: bestMerge.from, targetCityId: bestMerge.to, picked: bestMerge.picked, troops: bestMerge.troops };
   }
   return null;
 }
@@ -524,8 +597,11 @@ export function stepPlayerAutopilot(silent = false): boolean {
     if (a.kind === 'march-move' && a.targetCityId && a.picked && a.troops !== undefined) {
       const src = G.cities[a.cityId!];
       const before = src.troops;
+      const tgt = G.cities[a.targetCityId];
       moveOfficers(a.cityId!, a.targetCityId, a.picked, a.troops);
-      bus.emit('log', `🤖 #${autoStepIdx} ${cityName}→${cityDef(a.targetCityId).name} 🚩 이동 ✓ ${before.toLocaleString()}→${src.troops.toLocaleString()} (전선 보강) (남은 CP: ${G.cp}).`, 'auto');
+      const isFrontline = cityDef(a.targetCityId).adj.some((x) => G.cities[x].owner !== G.playerFaction);
+      const reason = isFrontline ? '전선 보강' : '부대 합치기 (약한 도시 → 강한 도시)';
+      bus.emit('log', `🤖 #${autoStepIdx} ${cityName}→${cityDef(a.targetCityId).name} 🚩 이동 ✓ ${before.toLocaleString()}→${src.troops.toLocaleString()} (목표 ${tgt.troops.toLocaleString()}, ${reason}) (남은 CP: ${G.cp}).`, 'auto');
       return G.cp > 0;
     }
 

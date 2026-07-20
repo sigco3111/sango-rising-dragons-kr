@@ -28,7 +28,7 @@ export function runAiTurns(startIndex = 0): { pendingBattle: BattleSetup | null;
       }
     }
 
-    // --- aggression: attack the weakest adjacent enemy city if clearly stronger ---
+    // --- aggression: B안 약화 — threshold 1.45→1.7, chance 65%→40% ---
     let best: { from: string; to: string; ratio: number } | null = null;
     for (const c of cities) {
       if (c.troops < 6000) continue;
@@ -40,10 +40,10 @@ export function runAiTurns(startIndex = 0): { pendingBattle: BattleSetup | null;
         const myPow = armyPower(Math.floor(c.troops * 0.75), myOff);
         const defPow = armyPower(t.troops, defOff, t.walls);
         const ratio = myPow / Math.max(1, defPow);
-        if (ratio > 1.45 && (!best || ratio > best.ratio)) best = { from: c.id, to: adjId, ratio };
+        if (ratio > 1.7 && (!best || ratio > best.ratio)) best = { from: c.id, to: adjId, ratio };
       }
     }
-    if (best && Math.random() < 0.65) {
+    if (best && Math.random() < 0.4) {
       const src = G.cities[best.from];
       const tgt = G.cities[best.to];
       const sendTroops = Math.floor(src.troops * 0.75);
