@@ -376,8 +376,9 @@ function pickBestSearch(): AutoAction | null {
 /** Find the weakest (lowest level) officer that can be trained. */
 function pickBestTrain(): AutoAction | null {
   if (G.cp <= 0) return null;
+  if (G.gold < 150) return null;  // pre-check so we don't pick a doomed target
   const my = officersOf(G.playerFaction)
-    .filter((o) => !o.acted)
+    .filter((o) => !o.acted && G.gold >= 150)
     .sort((a, b) => a.level - b.level || a.exp - b.exp);
   if (my.length === 0) return null;
   return { kind: 'train', officerId: my[0].id };
@@ -513,7 +514,13 @@ export function stepPlayerAutopilot(silent = false): boolean {
 
     if (a.kind === 'train' && a.officerId) {
       const beforeGold = G.gold;
-      trainOfficer(a.officerId);
+      // ★ FIX: check return value — trainOfficer may fail (gold 부족, 이미 행동함)
+      const ok = trainOfficer(a.officerId);
+      if (!ok) {
+        // trainOfficer already emitted its own warning log. Skip and try next action.
+        bus.emit('log', `🤖 #${autoStepIdx} ${officerDef(a.officerId).name} 🎯 조련 ✗ 스킵.`, 'auto');
+        continue;
+      }
       bus.emit('log', `🤖 #${autoStepIdx} ${officerDef(a.officerId).name} 🎯 조련 ✓ (금 변화 ${(G.gold - beforeGold).toLocaleString()}) (남은 CP: ${G.cp}).`, 'auto');
       return G.cp > 0;
     }
@@ -536,6 +543,7 @@ export function stepPlayerAutopilot(silent = false): boolean {
       if (c[a.kind] >= max) { bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ${ACTION_ICON[a.kind]} ✗ 스킵 — 이미 최고 레벨(${max}).`, 'auto'); continue; }
       if (G.gold < DEV_COST) { bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ${ACTION_ICON[a.kind]} ✗ 스킵 — 금 부족.`, 'auto'); continue; }
       const before = c[a.kind];
+      // ★ FIX: check return value (develop may fail on max level, gold shortage)
       if (develop(a.cityId, a.kind)) {
         bus.emit('log', `🤖 #${autoStepIdx} ${cityName} ${ACTION_ICON[a.kind]} ✓ Lv${before}→Lv${c[a.kind]} · -400 금 (남은 CP: ${G.cp}, 금: ${G.gold.toLocaleString()}).`, 'auto');
         return G.cp > 0;

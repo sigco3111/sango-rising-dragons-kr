@@ -40,17 +40,24 @@ export function endTurn() {
  */
 function runAutopilotTurn() {
   if (!G || G.over || G.cp <= 0) { continueAi(0); return; }
+  // Safety net: cap total attempts per drain to avoid infinite loops if a bug slips through.
+  if ((runAutopilotTurn as any)._depth === undefined) (runAutopilotTurn as any)._depth = 0;
+  (runAutopilotTurn as any)._depth++;
+  if ((runAutopilotTurn as any)._depth > 50) {
+    (runAutopilotTurn as any)._depth = 0;
+    bus.emit('log', '🤖 ⚠ 자동위임 안전 종료 (50회 시도 초과).', 'auto');
+    continueAi(0);
+    return;
+  }
   setTimeout(() => {
-    if (!busy || G.over) return;
+    if (!busy || G.over) { (runAutopilotTurn as any)._depth = 0; return; }
     const more = stepPlayerAutopilot(true);
     bus.emit('refresh');
     if (more) {
       runAutopilotTurn();
     } else {
-      // stepPlayerAutopilot returned false → either no actions OR a march was emitted
-      // The march handler (bus.on('autopilotMarch')) below resolves and re-calls.
-      // If no march is pending and we got here, we're done.
       if (!pendingMarch) {
+        (runAutopilotTurn as any)._depth = 0;
         bus.emit('log', '🤖 자동위임 종료 — AI 턴으로 넘어갑니다.', 'auto');
         continueAi(0);
       }
@@ -87,6 +94,7 @@ bus.on('autopilotMarch', (setup: BattleSetup) => {
 });
 
 function continueAi(startIndex: number) {
+  (runAutopilotTurn as any)._depth = 0;  // reset safety counter when leaving autopilot
   const { pendingBattle, nextIndex } = runAiTurns(startIndex);
   aiResumeIndex = nextIndex;
   if (pendingBattle) {
