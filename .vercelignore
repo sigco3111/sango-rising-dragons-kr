@@ -1,14 +1,9 @@
-# Vercel이 무시할 파일
+# Vercel이 무시할 파일 (빌드/런타임과 무관한 로컬 산출물만)
 node_modules/
-src/
-screenshots/
-play.sh
 .git/
 .gitignore
-*.md
-!README.md
+screenshots/
 *.log
 .DS_Store
-public/
-*.ts
-*.tsx
+*.md
+!README.md
