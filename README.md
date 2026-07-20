@@ -254,13 +254,22 @@ EOF
 - 한국어 폰트 / 디자인
 - 한국어 시나리오 모드
 
-## 📊 게임 화면 (v0.3)
+## 📊 게임 화면 (v0.5)
 
 > 🎮 **바로 플레이**: https://sango-rising-dragons.vercel.app
 >
 > 로딩 후 인트로 모달의 **"천하가 내 이름을 알게 되리라"** 버튼을 누르면 전략 맵으로 진입합니다.
 
-### 인트로 모달
+### 🏯 타이틀 화면 — 진영 선택
+
+![타이틀 화면](https://raw.githubusercontent.com/sigco3111/sango-rising-dragons-kr/main/screenshots/v3-01-title.png)
+
+한국어화된 3개 플레이어블 진영(조조군 / 유비군 / 손견군)에서 하나를 선택해 시작합니다.
+
+### 📜 인트로 모달 — 한실 기울다
+
+![인트로 모달](https://raw.githubusercontent.com/sigco3111/sango-rising-dragons-kr/main/screenshots/v3-02-intro.png)
+
 > **한실 기울다**
 >
 > 건헌제 폐위 이후 한나라는 날로 기울어 가고, 천하는 패업을 꿈꾸는 군웅이 난립합니다.
@@ -271,7 +280,18 @@ EOF
 >
 > [천하가 내 이름을 알게 되리라.]
 
-### 사이드 패널 (아군 도시)
+3단락 내러티브로 한국어화. "천하가 내 이름을 알게 되리라" 버튼으로 시작.
+
+### 🗺️ 전략 맵 — 아군 도시
+
+![전략 맵](https://raw.githubusercontent.com/sigco3111/sango-rising-dragons-kr/main/screenshots/v3-03-own-city.png)
+
+시작 시 수도(예: 조조 = 진류)에 깃발 + 한국어 1글자 심볼(위/촉/오)이 표시됩니다. 도시 옆의 `8k` 등은 천 단위 병력, 깃발 색은 진영.
+
+### 🎮 사이드 패널 — 진류 클릭
+
+![사이드 패널](https://raw.githubusercontent.com/sigco3111/sango-rising-dragons-kr/main/screenshots/05-city-selected.png)
+
 > **성도 개관** (예: 진류)
 >
 > 🏴 1/20 · 목표 12개 성도 · 6,000 총병력 · 2 장수
@@ -281,6 +301,39 @@ EOF
 > [🌾 개간] [🪙 통상] [🧱 축성] [⚔ 징병] [🚩 출정]
 >
 > ⌜장수 카드⌟ 조조 (패왕) · Lv1 · 무력 78 · 통솔 96 · ✦ 고무
+
+한국어 도시 이름 + 설명 + hover 도움말 풍성화. 조련/수색은 사이드패널 우측 🔍 🎯 버튼.
+
+### 🤖 자동위임 동작 (예시 로그)
+
+위 자동위임 토글을 켜고 "턴 종료" 한 번 클릭하면 이런 식으로 진행됩니다:
+
+```
+🤖 자동위임 계획 (공격적, CP=5): 6개 — ⚔ 출정(공격) ×1, 🚩 출정(이동) ×1,
+   🔍 수색 ×1, 🎯 조련 ×1, 🌾 개간 ×1, ⚔ 징병 ×1.
+🤖 #1 진류→양양 ⚔ 출정(공격) → 자동 출정: 진류→양양 🏴 함락!
+   (8,500 vs 6,200, 성벽 2, 비율 ≈1.95) — 아군 잔여 4,800.
+🤖 #2 진류→허도 🚩 이동 ✓ 5,000→3,000 (목표 8,000, 부대 합치기)
+   (남은 CP: 4).
+🤖 #3 허도 🔍 수색 ✓ 관우 합류! (남은 CP: 3).
+🤖 #4 관우 🎯 조련 ✓ (금 변화 -150) (남은 CP: 2).
+🤖 자동위임 종료 — AI 턴으로 넘어갑니다.
+```
+
+### 🏆 엔딩 화면
+
+```
+🏆 천명소귀
+
+190년, 당신의 깃발이 열두 개유명의 도시 위에 나부낍니다.
+군웅이 머리를 숙이고 만민이 추대하여, 새 왕조가 탄생합니다.
+천하의 대세는 갈라졌다 합쳐지기를 반복하더니 —
+난세가 드디어 당신의 손에서 막을 내립니다.
+
+천하 통일!
+```
+
+또는 패망 시 **💀 대세막아** 모달.
 
 ## 📜 크레딧
 
@@ -299,11 +352,11 @@ EOF
 ## 🔗 관련 링크
 
 - [🎮 라이브 데모 (Vercel)](https://sango-rising-dragons.vercel.app)
+- [📸 스크린샷 갤러리](./screenshots/) — 7장 PNG (1280×800)
 - [원본 저장소 (ryantsai/sango-rising-dragons)](https://github.com/ryantsai/sango-rising-dragons)
 - [한글화 포크 (sigco3111/sango-rising-dragons-kr)](https://github.com/sigco3111/sango-rising-dragons-kr)
 - [Vercel 배포 가이드](https://vercel.com/docs)
 - [이슈 트래커](https://github.com/sigco3111/sango-rising-dragons-kr/issues)
-- [스크린샷](./screenshots/)
 
 ## 📝 버전 히스토리
 
