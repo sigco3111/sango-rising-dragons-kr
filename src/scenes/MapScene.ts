@@ -78,7 +78,7 @@ export class MapScene extends Phaser.Scene {
     }
 
     this.add.image(70, 650, 'c_compass').setScale(0.9).setAlpha(0.8);
-    this.add.text(1190, 695, '青龍紀年 · 190', { fontFamily: 'serif', fontSize: '13px', color: '#7a6a48' }).setOrigin(1, 1);
+    this.add.text(1190, 695, '청룡기년 · 190', { fontFamily: 'serif', fontSize: '13px', color: '#7a6a48' }).setOrigin(1, 1);
   }
 
   private drawRiver(points: number[][], color: number, width: number) {

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="ko">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>三國・起龍</title>
+<title>삼국・기용</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23b3322a'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23efe3c8' font-family='serif'>三</text></svg>">
 <style>
   :root {
@@ -22,7 +22,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #0d0b07; }
   body {
-    font-family: "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
+    font-family: "Noto Sans KR", "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
     color: var(--text);
     user-select: none;
   }
@@ -47,7 +47,7 @@
   button:disabled { opacity: .42; cursor: default; }
   button.primary { background: linear-gradient(180deg, #8c2722, #5e1713); border-color: #c2553f; }
   button.primary:hover:not(:disabled) { background: linear-gradient(180deg, #a93129, #6e1b16); border-color: #ff9b6a; }
-  .zh { font-family: "Noto Serif TC", "PMingLiU", serif; }
+  .zh { font-family: "Noto Serif TC", "Noto Serif KR", "PMingLiU", serif; }
 
   /* ---------- top bar ---------- */
   #topbar {
@@ -213,15 +213,15 @@
     <div id="game"></div>
 
     <div id="topbar" class="hidden">
-      <span class="logo zh">三國・起龍</span>
-      <span class="stat" id="dateStat"><span class="ico">🗓</span><b id="dateVal">190 · Spring</b></span>
+      <span class="logo zh">삼국・기룡</span>
+      <span class="stat" id="dateStat"><span class="ico">🗓</span><b id="dateVal">190 · 봄</b></span>
       <span class="stat"><span class="ico">🪙</span><b id="goldVal">0</b></span>
       <span class="stat"><span class="ico">🌾</span><b id="foodVal">0</b></span>
-      <span class="stat" title="指令點──下達指令時消耗"><span class="ico">⚡</span><b id="cpVal">0</b></span>
+      <span class="stat" title="명령점──명령을 내릴 때 소모"><span class="ico">⚡</span><b id="cpVal">0</b></span>
       <span class="spacer"></span>
       <span id="factionChip"><span class="dot"></span><span id="factionName"></span></span>
-      <button id="saveBtn" title="儲存進度">💾 儲存</button>
-      <button id="endTurnBtn" class="primary">結束回合 ⮕</button>
+      <button id="saveBtn" title="진행 상황 저장">💾 저장</button>
+      <button id="endTurnBtn" class="primary">턴 종료 ⮕</button>
     </div>
 
     <div id="side" class="hidden">
@@ -237,12 +237,12 @@
     <div id="tip" class="hidden"></div>
 
     <div id="title">
-      <div class="big zh">三國</div>
-      <div class="stamp zh">起龍</div>
-      <div class="sub2">亂世群雄 · 天命之爭</div>
+      <div class="big zh">삼국</div>
+      <div class="stamp zh">기룡</div>
+      <div class="sub2">난세의 군웅 · 천명쟁탈</div>
       <div id="factionPick"></div>
-      <div id="continueRow" class="hidden"><button id="continueBtn" class="primary">⟳ 繼續上次的征途</button></div>
-      <div class="foot">三國志策略・角色扮演遊戲 — 美術與音效素材：Kenney.nl（CC0）</div>
+      <div id="continueRow" class="hidden"><button id="continueBtn" class="primary">⟳ 지난 출정 계속</button></div>
+      <div class="foot">삼국지 전략·RPG 게임 — 미술/음향: Kenney.nl (CC0)</div>
     </div>
   </div>
   <script type="module" src="/src/main.ts"></script>

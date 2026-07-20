@@ -1,3 +1,6 @@
 {
-  "packs": ["base"]
+  "packs": [
+    "ko",
+    "base"
+  ]
 }

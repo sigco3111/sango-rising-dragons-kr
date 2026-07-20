@@ -14,7 +14,7 @@ export function monthOf(turn: number) { return ((turn - 1) % 12) + 1; }
 export function yearOf(turn: number) { return 190 + Math.floor((turn - 1) / 12); }
 export function seasonOf(turn: number) {
   const m = monthOf(turn);
-  return m <= 3 ? '春' : m <= 6 ? '夏' : m <= 9 ? '秋' : '冬';
+  return m <= 3 ? '봄' : m <= 6 ? '여름' : m <= 9 ? '가을' : '겨울';
 }
 
 export function citiesOf(fid: string): CityState[] {
@@ -45,7 +45,7 @@ export function gainExp(o: OfficerState, amount: number) {
     o.exp -= expToLevel(o.level);
     o.level++;
     if (o.faction === G.playerFaction) {
-      bus.emit('log', `⬆ ${officerDef(o.id).name} 升到了 Lv${o.level}！`);
+      bus.emit('log', `⬆ ${officerDef(o.id).name} Lv${o.level} 레벨업!`);
     }
   }
 }
@@ -113,7 +113,7 @@ export function startPlayerTurn() {
     const cities = citiesOf(G.playerFaction);
     for (const c of cities) c.troops = Math.max(200, Math.floor(c.troops * 0.93));
     G.food = 0;
-    bus.emit('log', '⚠ 糧倉空虛！士卒因飢餓而逃亡。');
+    bus.emit('log', '⚠ 식량고이 비었습니다! 병사들이 굶주려 도망쳤습니다.');
   }
   G.cp = maxCp();
   for (const o of officersOf(G.playerFaction)) o.acted = false;
@@ -123,7 +123,7 @@ export function startPlayerTurn() {
 // ---------- player actions (cost CP) ----------
 
 export function spendCp(n = 1): boolean {
-  if (G.cp < n) { bus.emit('log', '⚠ 指令點已用盡——請結束回合。'); return false; }
+  if (G.cp < n) { bus.emit('log', '⚠ 명령점이 모두 소진되었습니다 — 턴을 종료하세요.'); return false; }
   G.cp -= n;
   return true;
 }
@@ -136,26 +136,26 @@ export const RECRUIT_AMOUNT = 1500;
 export function develop(cityId: string, kind: 'farm' | 'market' | 'walls'): boolean {
   const c = G.cities[cityId];
   const max = kind === 'walls' ? 5 : 6;
-  if (c[kind] >= max) { bus.emit('log', '⚠ 已達最高等級。'); return false; }
-  if (G.gold < DEV_COST) { bus.emit('log', '⚠ 金錢不足。'); return false; }
+  if (c[kind] >= max) { bus.emit('log', '⚠ 이미 최고 레벨입니다.'); return false; }
+  if (G.gold < DEV_COST) { bus.emit('log', '⚠ 금전이 부족합니다.'); return false; }
   if (!spendCp()) return false;
   G.gold -= DEV_COST;
   c[kind]++;
   bus.emit('sfx', 'build');
-  bus.emit('log', `🏗 ${cityDef(cityId).name}：${kind === 'farm' ? '農田' : kind === 'market' ? '市集' : '城牆'}提升至 ${c[kind]} 級。`);
+  bus.emit('log', `🏗 ${cityDef(cityId).name}:${kind === 'farm' ? '농지' : kind === 'market' ? '시장' : '성벽'}레벨 ${c[kind]}까지 향상.`);
   bus.emit('refresh');
   return true;
 }
 
 export function recruit(cityId: string): boolean {
   if (G.gold < RECRUIT_COST_GOLD || G.food < RECRUIT_COST_FOOD) {
-    bus.emit('log', '⚠ 徵兵需要200金與300糧。'); return false;
+    bus.emit('log', '⚠ 징병에는 200 금과 300 식량이 필요합니다.'); return false;
   }
   if (!spendCp()) return false;
   G.gold -= RECRUIT_COST_GOLD; G.food -= RECRUIT_COST_FOOD;
   G.cities[cityId].troops += RECRUIT_AMOUNT;
   bus.emit('sfx', 'recruit');
-  bus.emit('log', `⚔ ${cityDef(cityId).name}徵得新兵 ${RECRUIT_AMOUNT} 人。`);
+  bus.emit('log', `⚔ ${cityDef(cityId).name}에서 신병 ${RECRUIT_AMOUNT}명 모집.`);
   bus.emit('refresh');
   return true;
 }
@@ -163,14 +163,14 @@ export function recruit(cityId: string): boolean {
 /** Send an officer to find free officers hiding in a city. */
 export function searchTalent(cityId: string, searcherId: string): boolean {
   const searcher = G.officers[searcherId];
-  if (searcher.acted) { bus.emit('log', '⚠ 該將領本回合已行動。'); return false; }
+  if (searcher.acted) { bus.emit('log', '⚠ 그 장수는 이번 턴에 이미 행동했습니다.'); return false; }
   if (!spendCp()) return false;
   searcher.acted = true;
   const free = freeOfficersIn(cityId);
   const pol = effStat(searcher, 'pol');
   if (free.length === 0) {
     G.gold += 100;
-    bus.emit('log', `🔍 ${officerDef(searcherId).name}在${cityDef(cityId).name}未尋得賢才，但徵得賦稅100金。`);
+    bus.emit('log', `🔍 ${officerDef(searcherId).name}이(가) ${cityDef(cityId).name}에서 인재는 찾지 못했지만, 세금 100 금을 거두었습니다.`);
   } else {
     const target = free[Math.floor(Math.random() * free.length)];
     const chance = 0.35 + pol / 200;
@@ -178,12 +178,12 @@ export function searchTalent(cityId: string, searcherId: string): boolean {
       target.faction = G.playerFaction;
       bus.emit('sfx', 'recruit');
       bus.emit('modal', {
-        title: '賢才來投！',
-        text: `${officerDef(searcherId).name}說動了名震一方的${officerDef(target.id).name}，使其加入我軍麾下！`,
-        choices: [{ label: '歡迎之至！', effects: [] }],
+        title: '인재가 합류합니다!',
+        text: `${officerDef(searcherId).name}이(가) 일세에 명성 높은 ${officerDef(target.id).name}을(를) 설득하여 우리 군에 합류시켰습니다!`,
+        choices: [{ label: '환영합니다!', effects: [] }],
       });
     } else {
-      bus.emit('log', `🔍 ${officerDef(searcherId).name}聽聞${officerDef(target.id).name}在${cityDef(cityId).name}出沒，可惜未能會面。`);
+      bus.emit('log', `🔍 ${officerDef(searcherId).name}소문${officerDef(target.id).name}이(가) ${cityDef(cityId).name}출몰, 안타깝게도못만날 수 있을지도.`);
     }
   }
   bus.emit('refresh');
@@ -192,13 +192,13 @@ export function searchTalent(cityId: string, searcherId: string): boolean {
 
 export function trainOfficer(officerId: string): boolean {
   const o = G.officers[officerId];
-  if (o.acted) { bus.emit('log', '⚠ 該將領本回合已行動。'); return false; }
-  if (G.gold < 150) { bus.emit('log', '⚠ 操練需要150金。'); return false; }
+  if (o.acted) { bus.emit('log', '⚠ 그 장수는 이번 턴에 이미 행동했습니다.'); return false; }
+  if (G.gold < 150) { bus.emit('log', '⚠ 조련에는 150 금이 필요합니다.'); return false; }
   if (!spendCp()) return false;
   o.acted = true;
   G.gold -= 150;
   gainExp(o, 40 + Math.floor(Math.random() * 30));
-  bus.emit('log', `🎯 ${officerDef(officerId).name}操練兵馬。（經驗提升）`);
+  bus.emit('log', `🎯 ${officerDef(officerId).name}이(가) 부대를 조련했습니다. (경험치 상승)`);
   bus.emit('refresh');
   return true;
 }
@@ -209,7 +209,7 @@ export function moveOfficers(from: string, to: string, officerIds: string[], tro
   src.troops -= troops;
   dst.troops += troops;
   for (const id of officerIds) { G.officers[id].city = to; G.officers[id].acted = true; }
-  bus.emit('log', `🚩 ${troops.toLocaleString()} 兵力自${cityDef(from).name}移往${cityDef(to).name}。`);
+  bus.emit('log', `🚩 ${troops.toLocaleString()} 병력이 ${cityDef(from).name}에서 ${cityDef(to).name}(으)로 이동.`);
   bus.emit('refresh');
 }
 
@@ -234,7 +234,7 @@ export function captureCity(cityId: string, newOwner: string, troops: number, of
   for (const id of officerIds) G.officers[id].city = cityId;
 
   if (oldOwner !== 'neutral' && citiesOf(oldOwner).length === 0) {
-    bus.emit('log', `💀 ${faction(oldOwner).name}已遭殲滅！`);
+    bus.emit('log', `💀 ${faction(oldOwner).name} 군이 괴멸되었습니다!`);
     for (const o of officersOf(oldOwner)) o.faction = '';
   }
   checkVictory();
@@ -270,17 +270,17 @@ export function applyEffects(effects: { op: string; v: any; to?: string; amount?
         // give to faction leader
         const leader = faction(G.playerFaction).leader;
         if (G.officers[leader]) G.officers[leader].item = e.v;
-        bus.emit('log', `🎁 獲得「${itemDef(e.v).name}」！`);
+        bus.emit('log', `🎁 '${itemDef(e.v).name}'을(를) 획득!`);
         break;
       }
       case 'itemBest': {
         const best = officersOf(G.playerFaction).sort((a, b) => effStat(b, 'war') - effStat(a, 'war'))[0];
-        if (best) { best.item = e.v; bus.emit('log', `🎁 ${officerDef(best.id).name}獲得「${itemDef(e.v).name}」！`); }
+        if (best) { best.item = e.v; bus.emit('log', `🎁 ${officerDef(best.id).name}획득「${itemDef(e.v).name}」！`); }
         break;
       }
       case 'itemBestInt': {
         const best = officersOf(G.playerFaction).sort((a, b) => effStat(b, 'int') - effStat(a, 'int'))[0];
-        if (best) { best.item = e.v; bus.emit('log', `🎁 ${officerDef(best.id).name}獲得「${itemDef(e.v).name}」！`); }
+        if (best) { best.item = e.v; bus.emit('log', `🎁 ${officerDef(best.id).name}획득「${itemDef(e.v).name}」！`); }
         break;
       }
       case 'exile': {

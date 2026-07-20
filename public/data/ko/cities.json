@@ -1,0 +1,82 @@
+[
+  {
+    "id": "beiping",
+    "name": "북평"
+  },
+  {
+    "id": "jinyang",
+    "name": "진양"
+  },
+  {
+    "id": "ye",
+    "name": "업"
+  },
+  {
+    "id": "beihai",
+    "name": "북해"
+  },
+  {
+    "id": "puyang",
+    "name": "복양"
+  },
+  {
+    "id": "xiliang",
+    "name": "서량"
+  },
+  {
+    "id": "changan",
+    "name": "장안"
+  },
+  {
+    "id": "luoyang",
+    "name": "낙양"
+  },
+  {
+    "id": "chenliu",
+    "name": "진류"
+  },
+  {
+    "id": "xiapi",
+    "name": "하비"
+  },
+  {
+    "id": "xuchang",
+    "name": "허창"
+  },
+  {
+    "id": "wan",
+    "name": "완"
+  },
+  {
+    "id": "shouchun",
+    "name": "수춘"
+  },
+  {
+    "id": "hanzhong",
+    "name": "한중"
+  },
+  {
+    "id": "xiangyang",
+    "name": "양양"
+  },
+  {
+    "id": "jiangxia",
+    "name": "강하"
+  },
+  {
+    "id": "chengdu",
+    "name": "성도"
+  },
+  {
+    "id": "changsha",
+    "name": "장사"
+  },
+  {
+    "id": "jianye",
+    "name": "건업"
+  },
+  {
+    "id": "wujun",
+    "name": "오군"
+  }
+]

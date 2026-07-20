@@ -105,9 +105,9 @@ function beginPlay(fresh: boolean) {
   if (fresh) {
     startPlayerTurn();
     fireEvents();
-    log(`🏯 征途展開——你統領${faction(G.playerFaction).name}。攻佔12座城池即可一統天下！`);
+    log(`🏯 출정이 시작됩니다 — 당신은 ${faction(G.playerFaction).name}을(를) 이끕니다. 12개 성도를 점령하면 천하를 통일합니다!`);
   } else {
-    log('💾 已讀取存檔，征途繼續。');
+    log('💾 세이브를 불러왔습니다. 출정을 계속합니다.');
   }
   bus.emit('refresh');
 }

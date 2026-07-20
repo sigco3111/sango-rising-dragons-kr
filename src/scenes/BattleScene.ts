@@ -129,10 +129,10 @@ export class BattleScene extends Phaser.Scene {
   private drawHeader() {
     const cd = cityDef(this.setup.cityId);
     const af = faction(this.setup.attacker), df = faction(this.setup.defender);
-    this.add.text(640, 20, `⚔ ${cd.name}之戰`, {
+    this.add.text(640, 20, `⚔ ${cd.name} 전투`, {
       fontFamily: '"Noto Serif TC", "PMingLiU", serif', fontSize: '24px', color: '#ffe9b0',
     }).setOrigin(0.5, 0);
-    this.add.text(640, 50, `${af.name}（左方·攻）  對  ${df.name}（右方·守）`, {
+    this.add.text(640, 50, `${af.name} (왼쪽 · 공격) vs ${df.name} (오른쪽 · 수비)`, {
       fontFamily: 'sans-serif', fontSize: '13px', color: '#b9aa86',
     }).setOrigin(0.5, 0);
   }
@@ -153,8 +153,8 @@ export class BattleScene extends Phaser.Scene {
       specs.push({ officerId: id, name: d.name, zh: d.zh, war: effStat(o, 'war'), int: effStat(o, 'int'), ldr: effStat(o, 'ldr'), troop: d.troop, skill: d.skill, level: o.level, moveBonus });
     }
     if (specs.length === 0) {
-      specs.push({ officerId: null, name: '守備隊長', zh: '兵', war: 55, int: 45, ldr: 55, troop: 'infantry', skill: 'guard', level: 1, moveBonus: 0 });
-      if (troops > 5000) specs.push({ officerId: null, name: '守備弓隊', zh: '弓', war: 50, int: 45, ldr: 50, troop: 'archer', skill: 'volley', level: 1, moveBonus: 0 });
+      specs.push({ officerId: null, name: '수비대장', zh: '兵', war: 55, int: 45, ldr: 55, troop: 'infantry', skill: 'guard', level: 1, moveBonus: 0 });
+      if (troops > 5000) specs.push({ officerId: null, name: '수비궁대', zh: '弓', war: 50, int: 45, ldr: 50, troop: 'archer', skill: 'volley', level: 1, moveBonus: 0 });
     }
     const totalLdr = specs.reduce((s, sp) => s + sp.ldr, 0);
     const rows = [3, 1, 5];
@@ -454,10 +454,10 @@ export class BattleScene extends Phaser.Scene {
           const myRoll = u.war * Phaser.Math.FloatBetween(0.85, 1.15);
           const theirRoll = e.war * Phaser.Math.FloatBetween(0.85, 1.15);
           if (myRoll >= theirRoll) {
-            this.floatText(u, '⚔ 單挑獲勝！', '#ffe9b0');
+            this.floatText(u, '⚔ 일기당천 승리!', '#ffe9b0');
             this.applyDamage(e, Math.floor(this.rawDamage(u, e, sk.power)), u);
           } else {
-            this.floatText(e, '⚔ 單挑獲勝！', '#ffe9b0');
+            this.floatText(e, '⚔ 일기당천 승리!', '#ffe9b0');
             this.applyDamage(u, Math.floor(this.rawDamage(e, u, sk.power * 0.7)), e);
           }
         }
@@ -476,7 +476,7 @@ export class BattleScene extends Phaser.Scene {
       case 'buff': {
         bus.emit('sfx', 'guard');
         u.guarding = true;
-        this.floatText(u, '🛡 鐵壁', '#9cc1ff');
+        this.floatText(u, '🛡 철벽', '#9cc1ff');
         break;
       }
     }
@@ -634,20 +634,20 @@ export class BattleScene extends Phaser.Scene {
 
   private updateTurnLabel() {
     const el = document.getElementById('battleTurn')!;
-    el.textContent = this.phase === 'player' ? `第 ${this.round}/${MAX_ROUNDS} 回合 — 我方行動` : `第 ${this.round} 回合 — 敵方行動`;
+    el.textContent = this.phase === 'player' ? `제 ${this.round}/${MAX_ROUNDS} 라운드 — 아군 행동` : `제 ${this.round} 라운드 — 적군 행동`;
     el.style.color = this.phase === 'player' ? '#ffe9b0' : '#ff8a70';
   }
 
   private updateHud() {
     const hud = document.getElementById('battleHud')!;
     if (this.phase !== 'player') {
-      hud.innerHTML = `<div class="unitInfo">敵軍行動中……</div>`;
+      hud.innerHTML = `<div class="unitInfo">적군 행동 중…</div>`;
       return;
     }
     const remaining = this.units.filter((x) => !x.dead && x.side === this.playerSide && !x.done).length;
     if (!this.sel) {
-      hud.innerHTML = `<div class="unitInfo">選擇部隊（尚有 ${remaining} 隊可行動）· 右鍵取消選取</div>
-        <button id="bhEndPhase">⏭ 結束階段</button> <button id="bhRetreat">🏳 撤退</button>`;
+      hud.innerHTML = `<div class="unitInfo">부대 선택 (행동 가능 ${remaining}개) · 우클릭으로 선택 취소</div>
+        <button id="bhEndPhase">⏭ 단계 종료</button> <button id="bhRetreat">🏳 퇴각</button>`;
       (document.getElementById('bhEndPhase') as HTMLButtonElement).onclick = () => {
         this.units.filter((x) => !x.dead && x.side === this.playerSide).forEach((x) => (x.done = true));
         this.startEnemyPhase();
@@ -660,9 +660,9 @@ export class BattleScene extends Phaser.Scene {
     const skillReady = u.cd <= 0;
     hud.innerHTML = `
       <div class="unitInfo"><b>${u.name}</b> ${TROOP_ICONS[u.troop]} Lv${u.level}<br>
-      兵力 ${u.hp.toLocaleString()} / ${u.maxHp.toLocaleString()} · 武力 ${u.war} 智力 ${u.int}</div>
+      병력 ${u.hp.toLocaleString()} / ${u.maxHp.toLocaleString()} · 무력 ${u.war} 지력 ${u.int}</div>
       <button id="bhSkill" ${skillReady ? '' : 'disabled'} title="${sk.desc}">✦ ${sk.name}${skillReady ? '' : `（${u.cd}）`}</button>
-      <button id="bhWait">⏸ 待命</button>
+      <button id="bhWait">⏸ 대기</button>
       <button id="bhRetreat">🏳</button>`;
     (document.getElementById('bhSkill') as HTMLButtonElement).onclick = () => {
       if (this.mode === 'skill') { this.mode = 'moved'; this.clearHl(); this.showTargets(u); }

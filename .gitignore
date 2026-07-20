@@ -1,5 +1,19 @@
+# Node
 node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build
 dist/
-assets_raw/
-.playwright-mcp/
-*.local
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~.tmp
+
+# Logs
+*.log
