@@ -2,6 +2,7 @@ import {
   G, bus, monthOf, yearOf, seasonOf, citiesOf, officersIn, freeOfficersIn,
   effStat, develop, recruit, searchTalent, trainOfficer, moveOfficers,
   applyEffects, saveGame, maxCp, DEV_COST,
+  getAutopilot, setAutopilot, loadAutopilot,
 } from './state';
 import { faction, cityDef, officerDef, skillDef, itemDef } from './content';
 import { endTurn, isBusy, reportBattle, onBattleComplete } from './flow';
@@ -27,6 +28,20 @@ export function initHud() {
   $('endTurnBtn').onclick = () => { if (!isBusy()) { sfx('click'); endTurn(); } };
   $('saveBtn').onclick = () => { saveGame(); log('💾 진행 상황이 저장되었습니다.'); sfx('confirm'); };
 
+  // autopilot toggle — restore previous state, wire change handler, sync visuals
+  const tog = $('autopilotToggle') as HTMLInputElement;
+  loadAutopilot();
+  tog.checked = getAutopilot();
+  syncAutoToggleVisual();
+  tog.addEventListener('change', () => {
+    setAutopilot(tog.checked);
+    log(tog.checked
+      ? '🤖 자동위임을 켭니다 — 다음 턴부터 위임이 시작됩니다.'
+      : '🤖 자동위임을 끕니다 — 다음 턴부터 직접 조작합니다.');
+    sfx('click');
+  });
+  bus.on('autopilotChanged', () => syncAutoToggleVisual());
+
   bus.on('refresh', refresh);
   bus.on('log', (msg: string, cls?: string) => log(msg, cls));
   bus.on('modal', (m: any) => showModal(m));
@@ -34,6 +49,13 @@ export function initHud() {
   bus.on('citySelected', (id: string | null) => { selectedCity = id; renderSide(); });
   bus.on('marchTarget', (data: { from: string; to: string }) => marchDialog(data.from, data.to));
   bus.on('gameover', (kind: 'win' | 'lose') => gameOver(kind));
+}
+
+function syncAutoToggleVisual() {
+  const lbl = document.getElementById('autoLabel');
+  const tog = $('autopilotToggle') as HTMLInputElement;
+  if (!lbl || !tog) return;
+  lbl.classList.toggle('on', tog.checked);
 }
 
 export function showGameUi() {

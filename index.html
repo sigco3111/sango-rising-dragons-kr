@@ -65,6 +65,21 @@
   #factionChip { display: flex; align-items: center; gap: 8px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--panel-edge); }
   #factionChip .dot { width: 10px; height: 10px; border-radius: 50%; }
 
+  /* autopilot toggle */
+  .auto-toggle {
+    display: flex; align-items: center; gap: 6px; padding: 4px 10px;
+    border: 1px solid var(--panel-edge); border-radius: 16px;
+    font-size: 12px; cursor: pointer; user-select: none;
+    transition: all .15s;
+  }
+  .auto-toggle input { accent-color: #4ea1ff; cursor: pointer; }
+  .auto-toggle:hover { border-color: var(--gold); }
+  .auto-toggle.on {
+    border-color: #4ea1ff; color: #b6dcff;
+    background: rgba(78, 161, 255, .12);
+    box-shadow: 0 0 12px rgba(78, 161, 255, .35);
+  }
+
   /* ---------- side panel ---------- */
   #side {
     position: absolute; top: 56px; right: 10px; width: 320px; max-height: calc(100vh - 130px);
@@ -120,6 +135,7 @@
     animation: slideIn .25s ease;
   }
   #log .entry.battle { border-left-color: var(--red); }
+  #log .entry.auto { border-left-color: #4ea1ff; opacity: .82; font-style: italic; }
   @keyframes slideIn { from { transform: translateX(-12px); opacity: 0; } }
 
   /* ---------- modal ---------- */
@@ -220,6 +236,9 @@
       <span class="stat" title="명령점──명령을 내릴 때 소모"><span class="ico">⚡</span><b id="cpVal">0</b></span>
       <span class="spacer"></span>
       <span id="factionChip"><span class="dot"></span><span id="factionName"></span></span>
+      <label class="auto-toggle" id="autoLabel" title="자동위임 ON/OFF — ON이면 매 턴 개간/축성/징병을 자동 처리, 다음 턴부터 다시 사용자가 조작">
+        <input type="checkbox" id="autopilotToggle"> 🤖 자동위임
+      </label>
       <button id="saveBtn" title="진행 상황 저장">💾 저장</button>
       <button id="endTurnBtn" class="primary">턴 종료 ⮕</button>
     </div>

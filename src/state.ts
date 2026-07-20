@@ -7,6 +7,25 @@ export const bus = new Phaser.Events.EventEmitter();
 export let G: GameState = null as any;
 
 const SAVE_KEY = 'sango_save_v1';
+const AUTOPILOT_KEY = 'sango_autopilot_v1';
+
+// ---------- autopilot (UI toggle, persisted) ----------
+
+let autopilotOn = false;
+
+export function getAutopilot(): boolean { return autopilotOn; }
+export function setAutopilot(on: boolean): void {
+  autopilotOn = !!on;
+  try { localStorage.setItem(AUTOPILOT_KEY, autopilotOn ? '1' : '0'); } catch { /* private mode */ }
+  bus.emit('autopilotChanged', autopilotOn);
+}
+export function loadAutopilot(): boolean {
+  try {
+    const v = localStorage.getItem(AUTOPILOT_KEY);
+    autopilotOn = v === '1';
+  } catch { autopilotOn = false; }
+  return autopilotOn;
+}
 
 // ---------- helpers ----------
 
@@ -245,6 +264,63 @@ export function checkVictory() {
   const owned = citiesOf(G.playerFaction).length;
   if (owned === 0) { G.over = 'lose'; bus.emit('gameover', 'lose'); }
   else if (owned >= 12) { G.over = 'win'; bus.emit('gameover', 'win'); }
+}
+
+// ---------- autopilot queue (A-scope: develop + recruit only) ----------
+//
+// 정책: 1) 식량 부족(farm<2) 도시 → 개간 2) 인접 적지 있는 미보강 도시(farm≥2) → 통상
+//       3) 병력<8k 도시 → 징병 4) 벽<3이고 인접 적지 → 축성. CP 소진/실패 시 종료.
+
+interface AutoAction {
+  cityId: string;
+  kind: 'farm' | 'market' | 'walls' | 'recruit';
+}
+
+/** Build a priority-ordered queue of A-scope actions for the player faction. */
+function buildAutopilotQueue(): AutoAction[] {
+  const my = citiesOf(G.playerFaction);
+  if (my.length === 0) return [];
+  const q: AutoAction[] = [];
+
+  for (const c of my) {
+    const cd = cityDef(c.id);
+    const adjacentHostile = cd.adj.some((a) => G.cities[a].owner !== G.playerFaction);
+
+    // 1) famine guard — push farm to 2 first
+    if (c.farm < 2 && G.gold >= DEV_COST) q.push({ cityId: c.id, kind: 'farm' });
+    // 2) market for income baseline
+    if (c.market < 2 && c.farm >= 2 && G.gold >= DEV_COST) q.push({ cityId: c.id, kind: 'market' });
+    // 4) walls under 3 AND adjacent hostile → prioritize walls
+    if (adjacentHostile && c.walls < 3 && G.gold >= DEV_COST) q.push({ cityId: c.id, kind: 'walls' });
+    // 3) low troops → recruit
+    if (c.troops < 8000 && G.gold >= RECRUIT_COST_GOLD && G.food >= RECRUIT_COST_FOOD) {
+      q.push({ cityId: c.id, kind: 'recruit' });
+    }
+  }
+  // round-robin by kind so cities don't all spend CP on one track
+  q.sort((a, b) => (a.kind === b.kind ? 0 : a.kind < b.kind ? -1 : 1));
+  return q;
+}
+
+/**
+ * Drain the autopilot queue one step at a time. Returns true if another step
+ * can run (call again), false when done. Caller must gate with isBusy()/G.over
+ * and emit 'refresh' between steps if it wants UI updates between actions.
+ */
+export function stepPlayerAutopilot(): boolean {
+  if (!G || G.over) return false;
+  // 1) defend first if any enemy battle is pending for player — handled in flow.ts via promptDefense
+  const queue = buildAutopilotQueue();
+  if (queue.length === 0 || G.cp <= 0) return false;
+  // Try first actionable item; if blocked (e.g. gold just drained), skip it.
+  for (const a of queue) {
+    if (a.kind === 'recruit') {
+      if (recruit(a.cityId)) return G.cp > 0;
+      continue;
+    }
+    if (develop(a.cityId, a.kind)) return G.cp > 0;
+  }
+  return false;
 }
 
 // ---------- events engine ----------

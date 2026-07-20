@@ -1,4 +1,4 @@
-import { G, bus, saveGame, startPlayerTurn, fireEvents, checkVictory } from './state';
+import { G, bus, saveGame, startPlayerTurn, fireEvents, checkVictory, getAutopilot, stepPlayerAutopilot } from './state';
 import { runAiTurns } from './ai';
 import { autoResolve, applyBattleResult } from './battle/model';
 import { cityDef, faction } from './content';
@@ -7,6 +7,12 @@ import type { BattleSetup, BattleResult } from './types';
 /**
  * Turn sequencing: player acts → endTurn() → AI factions act (a defense
  * battle may interrupt) → month advances → income + events → player acts.
+ *
+ * Autopilot (A-scope: develop + recruit only):
+ *   - getAutopilot() ON  → endTurn() drains the player action queue, then chains to AI.
+ *   - getAutopilot() OFF → manual flow (user clicks cities).
+ *   - Defense battles always run the AI side directly when autopilot is ON.
+ *   - Combat / march / search / train stay manual (per A안 policy).
  */
 
 let aiResumeIndex = 0;
@@ -18,7 +24,25 @@ export function endTurn() {
   if (busy || G.over) return;
   busy = true;
   bus.emit('refresh');
+  if (getAutopilot()) {
+    bus.emit('log', '🤖 자동위임 — 플레이어 행동을 위임합니다.', 'auto');
+    runAutopilotTurn();
+    return;
+  }
   continueAi(0);
+}
+
+/** Drain the autopilot queue step by step, then chain to AI. */
+function runAutopilotTurn() {
+  if (!G || G.over || G.cp <= 0) { continueAi(0); return; }
+  // Each step runs synchronously; small delay so UI can paint between actions.
+  setTimeout(() => {
+    if (!busy || G.over) return;
+    const more = stepPlayerAutopilot();
+    bus.emit('refresh');
+    if (more) runAutopilotTurn();
+    else continueAi(0);
+  }, 60);
 }
 
 function continueAi(startIndex: number) {
@@ -34,6 +58,15 @@ function continueAi(startIndex: number) {
 function promptDefense(setup: BattleSetup) {
   const atk = faction(setup.attacker).name;
   const city = cityDef(setup.cityId).name;
+  // Autopilot ON → skip the prompt and auto-resolve the defense directly.
+  if (getAutopilot()) {
+    bus.emit('log', `🤖 자동위임 — ${city} 방어를 자동 결산합니다.`, 'auto');
+    const r = autoResolve(setup);
+    reportBattle(setup, r);
+    applyBattleResult(setup, r);
+    afterBattle();
+    return;
+  }
   bus.emit('modal', {
     title: `${city}告急！`,
     text: `${atk}率 ${setup.atkTroops.toLocaleString()} 大軍進犯${city}！\n\n我方守軍：${setup.defTroops.toLocaleString()} 兵力，城牆 ${setup.walls} 級。`,
