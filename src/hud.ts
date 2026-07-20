@@ -28,12 +28,13 @@ export function initHud() {
   $('endTurnBtn').onclick = () => { if (!isBusy()) { sfx('click'); endTurn(); } };
   $('saveBtn').onclick = () => { saveGame(); log('💾 진행 상황이 저장되었습니다.'); sfx('confirm'); };
 
-  // Keyboard shortcut: Enter = turn end (skip when typing in inputs/textareas)
+  // Keyboard shortcut: Enter = turn end (skip when typing in inputs/textareas, or when a modal is open)
   window.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key !== 'Enter') return;
     if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
     const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
     if (tag === 'input' || tag === 'textarea' || (e.target as HTMLElement | null)?.isContentEditable) return;
+    if (!document.getElementById('modalWrap')?.classList.contains('hidden')) return;  // ★ modal open
     e.preventDefault();
     if (G?.over) return;
     if (!isBusy()) { sfx('click'); endTurn(); }
