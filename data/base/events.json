@@ -1,0 +1,108 @@
+[
+  {
+    "id": "intro",
+    "title": "漢室傾頹",
+    "trigger": { "minTurn": 1, "maxTurn": 1, "once": true },
+    "text": "時值西元190年。漢室名存實亡——暴君董卓挾持天子，順我者昌，逆我者焚。\n\n群雄並起，各懷帝王之夢。經營城池、招攬名將、揮軍征戰，一統三國吧。\n\n攻佔天下二十座名城中的十二座，即可承受天命。",
+    "choices": [ { "label": "天下當知我名。", "effects": [] } ]
+  },
+  {
+    "id": "coalition",
+    "title": "討董聯盟",
+    "trigger": { "minTurn": 2, "maxTurn": 3, "once": true, "notFaction": "dong" },
+    "text": "袁紹傳檄天下：「董卓挾持天子，禍亂朝綱！望諸君共舉義旗，會師洛陽！」\n\n加入聯盟可獲得聲望與義士捐輸的軍資；按兵不動則可安心屯田積糧。",
+    "choices": [
+      { "label": "加入聯盟（金錢+500，全軍將領獲得經驗）", "effects": [ { "op": "gold", "v": 500 }, { "op": "expAll", "v": 60 }, { "op": "log", "v": "你的旗幟加入了討董聯盟，天下為之矚目。" } ] },
+      { "label": "婉拒並專心內政（糧草+800）", "effects": [ { "op": "food", "v": 800 } ] }
+    ]
+  },
+  {
+    "id": "yellowturban",
+    "title": "黃巾餘黨",
+    "trigger": { "minTurn": 4, "maxTurn": 30, "once": true },
+    "text": "黃巾之亂的餘黨襲擾你的邊境，燒毀糧倉、劫掠糧車。",
+    "choices": [
+      { "label": "討伐並收編其眾（兵力+1500，金錢-300）", "effects": [ { "op": "gold", "v": -300 }, { "op": "troopsHome", "v": 1500 }, { "op": "log", "v": "敗北的賊眾被收編入你的軍中。" } ] },
+      { "label": "花錢消災請其離去（糧草-600）", "effects": [ { "op": "food", "v": -600 } ] }
+    ]
+  },
+  {
+    "id": "zhaoyun",
+    "title": "白袍將軍",
+    "trigger": { "minTurn": 5, "maxTurn": 40, "once": true, "faction": "shu", "officerFree": "zhaoyun" },
+    "text": "一位身披白甲的年輕將軍，跨著雪白駿馬來到營中：「常山趙子龍，遍尋仁德之主——百姓皆稱頌將軍之名。」",
+    "choices": [
+      { "label": "以兄弟之禮相迎（趙雲加入！）", "effects": [ { "op": "recruit", "v": "zhaoyun" } ] }
+    ]
+  },
+  {
+    "id": "seal",
+    "title": "傳國玉璽",
+    "trigger": { "minTurn": 6, "maxTurn": 99, "once": true, "ownsCity": "luoyang" },
+    "text": "工匠清理洛陽宮殿廢墟的水井時，撈起一具懷抱玉匣的屍骸。匣中之物，正是漢室傳國玉璽——天命所歸的象徵。",
+    "choices": [
+      { "label": "秘密收藏（每回合金錢收入+150）", "effects": [ { "op": "item", "v": "seal" } ] },
+      { "label": "高價售出（金錢+2000）", "effects": [ { "op": "gold", "v": 2000 } ] }
+    ]
+  },
+  {
+    "id": "blacksmith",
+    "title": "流浪的鑄劍師",
+    "trigger": { "minTurn": 8, "maxTurn": 60, "once": true },
+    "text": "一位鑄劍大師來到城門前，獻上一柄紋鋼巨刃——月光之下，刀鋒宛如青龍翻騰。",
+    "choices": [
+      { "label": "為麾下第一猛將購下寶刀（金錢-800，武力+8）", "effects": [ { "op": "gold", "v": -800 }, { "op": "itemBest", "v": "blade" } ], "requireGold": 800 },
+      { "label": "請他離去", "effects": [] }
+    ]
+  },
+  {
+    "id": "plague",
+    "title": "軍營瘟疫",
+    "trigger": { "minTurn": 10, "maxTurn": 60, "once": true },
+    "text": "瘟疫在你最大的軍營中蔓延，士卒於帳中發寒顫抖；醫者索要銀錢購置藥草、整治營舍。",
+    "choices": [
+      { "label": "重金延醫（金錢-500）", "effects": [ { "op": "gold", "v": -500 } ], "requireGold": 500 },
+      { "label": "聽天由命（兵力-2000）", "effects": [ { "op": "troopsHome", "v": -2000 } ] }
+    ]
+  },
+  {
+    "id": "harvest",
+    "title": "五穀豐登",
+    "trigger": { "minTurn": 7, "maxTurn": 999, "month": 9, "chance": 0.6 },
+    "text": "金黃的稻浪一望無際，穀倉滿溢，農人在曬穀場上歡歌。",
+    "choices": [ { "label": "甚好。（糧草+600）", "effects": [ { "op": "food", "v": 600 } ] } ]
+  },
+  {
+    "id": "lubu_betrayal",
+    "title": "呂布弒主",
+    "trigger": { "minTurn": 14, "maxTurn": 16, "once": true, "factionAlive": "dong" },
+    "text": "驚天消息傳遍四海：司徒王允巧施連環計，以美人貂蟬離間董卓與其麾下第一猛將。呂布手刃義父部將，叛出京師！\n\n董卓軍因這場叛變而元氣大傷。",
+    "choices": [ { "label": "天理昭彰，報應不爽。", "effects": [ { "op": "exile", "v": "lubu", "to": "puyang" }, { "op": "weakenFaction", "v": "dong", "amount": 4000 } ] } ]
+  },
+  {
+    "id": "zhugeliang",
+    "title": "臥龍出山",
+    "trigger": { "minTurn": 20, "maxTurn": 99, "once": true, "faction": "shu", "officerFree": "zhugeliang" },
+    "text": "傳聞隆中草廬之內，隱居著一位曠世奇才——世人稱之為「臥龍」。你三度冒雪登門拜訪，柴扉終於開啟。\n\n「將軍屈尊三顧，亮感激不盡。今天下三分……他日必當共復一統。」",
+    "choices": [
+      { "label": "諸葛亮加入麾下！", "effects": [ { "op": "recruit", "v": "zhugeliang" }, { "op": "reveal", "v": "zhugeliang" } ] }
+    ]
+  },
+  {
+    "id": "redhare_event",
+    "title": "烈火神駒",
+    "trigger": { "minTurn": 17, "maxTurn": 60, "once": true },
+    "text": "西域馬商牽來一匹通體赤紅如炭火的駿馬，據說日行千里。人中呂布，馬中赤兔。",
+    "choices": [
+      { "label": "不惜重金買下（金錢-1200，麾下第一騎將移動力+2）", "effects": [ { "op": "gold", "v": -1200 }, { "op": "itemBest", "v": "redhare" } ], "requireGold": 1200 },
+      { "label": "馬廄裝不下這等神駒", "effects": [] }
+    ]
+  },
+  {
+    "id": "scholar",
+    "title": "兵法傳承",
+    "trigger": { "minTurn": 12, "maxTurn": 60, "once": true },
+    "text": "一位仰慕你治世之才的老儒，獻上一部歷代名家批註的手抄《孫子兵法》。",
+    "choices": [ { "label": "鄭重拜謝（麾下最具智謀的將領智力+8）", "effects": [ { "op": "itemBestInt", "v": "artofwar" } ] } ]
+  }
+]
