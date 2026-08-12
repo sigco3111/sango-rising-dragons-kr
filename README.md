@@ -3,10 +3,10 @@
 > **三国・起龍 (Romance of the Three Kingdoms)**
 > [ryantsai/sango-rising-dragons](https://github.com/ryantsai/sango-rising-dragons)의 한국어 한글화 포크
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000?logo=vercel&logoColor=white)](https://sango-rising-dragons.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000?logo=vercel&logoColor=white)](https://sigco3111.github.io/sango-rising-dragons-kr)
 [![GitHub](https://img.shields.io/badge/GitHub-sigco3111-181717?logo=github)](https://github.com/sigco3111/sango-rising-dragons-kr)
 [![한글화](https://img.shields.io/badge/한글화-v0.5-blue)](https://github.com/sigco3111/sango-rising-dragons-kr)
-[![자동위임](https://img.shields.io/badge/자동위임-AI-purple)](https://sango-rising-dragons.vercel.app)
+[![자동위임](https://img.shields.io/badge/자동위임-AI-purple)](https://sigco3111.github.io/sango-rising-dragons-kr)
 [![License](https://img.shields.io/badge/license-학습_/_연구-yellow)](#-라이선스)
 
 西元 190년, 한실 기울다. 군웅이 일어나 천하를 다투는 난세 —
@@ -256,7 +256,7 @@ EOF
 
 ## 📊 게임 화면 (v0.5)
 
-> 🎮 **바로 플레이**: https://sango-rising-dragons.vercel.app
+> 🎮 **바로 플레이**: https://sigco3111.github.io/sango-rising-dragons-kr
 >
 > 로딩 후 인트로 모달의 **"천하가 내 이름을 알게 되리라"** 버튼을 누르면 전략 맵으로 진입합니다.
 
@@ -335,7 +335,7 @@ EOF
 
 ## 🔗 관련 링크
 
-- [🎮 라이브 데모 (Vercel)](https://sango-rising-dragons.vercel.app)
+- [🎮 라이브 데모 (Vercel)](https://sigco3111.github.io/sango-rising-dragons-kr)
 - [📸 스크린샷 갤러리](./screenshots/) — 7장 PNG (1280×800)
 - [원본 저장소 (ryantsai/sango-rising-dragons)](https://github.com/ryantsai/sango-rising-dragons)
 - [한글화 포크 (sigco3111/sango-rising-dragons-kr)](https://github.com/sigco3111/sango-rising-dragons-kr)
