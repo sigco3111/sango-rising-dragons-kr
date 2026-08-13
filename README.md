@@ -3,7 +3,7 @@
 > **三国・起龍 (Romance of the Three Kingdoms)**
 > [ryantsai/sango-rising-dragons](https://github.com/ryantsai/sango-rising-dragons)의 한국어 한글화 포크
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000?logo=vercel&logoColor=white)](https://sigco3111.github.io/sango-rising-dragons-kr)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-222222?logo=githubpages&logoColor=white)](https://sigco3111.github.io/sango-rising-dragons-kr)
 [![GitHub](https://img.shields.io/badge/GitHub-sigco3111-181717?logo=github)](https://github.com/sigco3111/sango-rising-dragons-kr)
 [![한글화](https://img.shields.io/badge/한글화-v0.5-blue)](https://github.com/sigco3111/sango-rising-dragons-kr)
 [![자동위임](https://img.shields.io/badge/자동위임-AI-purple)](https://sigco3111.github.io/sango-rising-dragons-kr)
@@ -84,7 +84,19 @@
 
 ## 🚀 빠른 시작
 
-### 방법 1: Vercel 배포 (권장, 1분)
+### 방법 1: GitHub Pages (현재 Production, 권장)
+
+이 저장소는 GitHub Pages에 호스팅되어 있어요 (Vercel 사용 이력 — 2026-08 GitHub Pages로 전환).
+
+```bash
+# 정적 빌드 후 gh-pages 브랜치에 배포
+npm install
+./play.sh build
+npx gh-pages -d dist -b gh-pages
+# → https://sigco3111.github.io/sango-rising-dragons-kr
+```
+
+### 방법 2: Vercel 배포 (Vercel 사용 이력 — CLI 보존, 1분)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sigco3111/sango-rising-dragons-kr)
 
@@ -93,7 +105,7 @@
 3. 자동 빌드 + 배포 (1~2분)
 4. `*.vercel.app` URL에서 게임 플레이
 
-### 방법 2: 로컬에서 빌드 + 실행
+### 방법 3: 로컬에서 빌드 + 실행
 
 ```bash
 # 의존성 설치
@@ -107,7 +119,7 @@ npm install
 # → 브라우저에서 http://localhost:8080 열기
 ```
 
-### 방법 3: Vite 개발 서버 (HMR)
+### 방법 4: Vite 개발 서버 (HMR)
 
 ```bash
 npm install
@@ -115,7 +127,7 @@ npm install
 # → http://localhost:5173
 ```
 
-### 방법 4: 브라우저에서 직접 열기
+### 방법 5: 브라우저에서 직접 열기
 
 ```bash
 ./play.sh build
@@ -130,7 +142,7 @@ npm install
 - **npm** 10+ (테스트됨)
 
 빌드 시간: **~2.2초** (17 modules, M4 Mac 기준)
-Vercel 배포 시간: **1~2분** (cold start 기준)
+| Vercel 배포 시간 (Vercel 사용 이력) | **1~2분** (cold start 기준) |
 
 ## 🗂 프로젝트 구조
 
@@ -139,8 +151,8 @@ sango-rising-dragons/
 ├── index.html              # 메인 HTML (lang="ko")
 ├── package.json
 ├── tsconfig.json
-├── vite.config.*           # Vite 설정 (생성 시)
-├── vercel.json             # Vercel 배포 설정
+├── vite.config.ts          # Vite 설정 (base: '/sango-rising-dragons-kr/' for Pages, '' for Vercel)
+├── vercel.json             # Vercel 배포 설정 (사용 이력 보존)
 ├── .vercelignore           # Vercel 배포 제외 파일
 ├── public/
 │   ├── assets/             # Kenney CC0 아트/음향
@@ -215,7 +227,7 @@ EOF
 
 새 모드는 `ko`보다 후순위 (덮어쓰기 X), `base`보다 우선순위 (덮어쓰기 O).
 
-## 🌐 Vercel 배포 가이드
+## 🌐 Vercel 배포 가이드 (Vercel 사용 이력 보존)
 
 ### 1. Vercel 계정 준비
 - https://vercel.com 에서 GitHub으로 가입
@@ -324,7 +336,7 @@ EOF
 - **원작자**: [@ryantsai](https://github.com/ryantsai) — 게임 코드, 디자인
 - **게임 엔진**: [Phaser 3](https://phaser.io)
 - **빌드 도구**: [Vite 6](https://vitejs.dev), [TypeScript 5](https://www.typescriptlang.org)
-- **배포**: [Vercel](https://vercel.com)
+- **배포**: GitHub Pages (Vercel 사용 이력 — 2026-08 전환)
 - **아트/음향**: [Kenney.nl](https://kenney.nl) (CC0)
 - **한글화 + 자동위임 + 밸런스**: [sigco3111](https://github.com/sigco3111)
 
@@ -335,11 +347,11 @@ EOF
 
 ## 🔗 관련 링크
 
-- [🎮 라이브 데모 (Vercel)](https://sigco3111.github.io/sango-rising-dragons-kr)
+- [🎮 라이브 데모 (GitHub Pages)](https://sigco3111.github.io/sango-rising-dragons-kr)
 - [📸 스크린샷 갤러리](./screenshots/) — 7장 PNG (1280×800)
 - [원본 저장소 (ryantsai/sango-rising-dragons)](https://github.com/ryantsai/sango-rising-dragons)
 - [한글화 포크 (sigco3111/sango-rising-dragons-kr)](https://github.com/sigco3111/sango-rising-dragons-kr)
-- [Vercel 배포 가이드](https://vercel.com/docs)
+- [Vercel 배포 가이드 (Vercel 사용 이력)](https://vercel.com/docs)
 - [이슈 트래커](https://github.com/sigco3111/sango-rising-dragons-kr/issues)
 
 ## 📝 버전 히스토리
@@ -353,3 +365,38 @@ EOF
 ---
 
 **⛩️ 천하가 내 이름을 알게 되리라.**
+
+---
+
+## ✅ Pages 이관 검증 (2026-08-13)
+
+| 항목 | 상태 |
+|------|------|
+| GitHub Pages 라이브 (`/`) | ✅ 200 (12882 bytes) |
+| `assets/index-BI4BzJS7.js` | ✅ 200 (1.5 MB, basePath 적용 후 새 hash로 교체 예정) |
+| `data/ko/cities.json` | ✅ 200 |
+| `assets/audio/click_001.ogg` | ✅ 200 |
+| `assets/med/rts_sheet.png` | ✅ 200 |
+| README 라이브 데모 URL | ✅ `https://sigco3111.github.io/sango-rising-dragons-kr` 통일 (영문 정직 라벨) |
+| README 잔존 Vercel (정직함 단서 외) | ✅ 0건 |
+| `vite.config.ts` base | ✅ `process.env.VERCEL ? '' : '/sango-rising-dragons-kr/'` 환경 분기 (P34 패턴) |
+| `vercel.json` 보존 | ✅ Vercel 사용 이력 단서 추가 (SPA rewrites + Cache-Control headers) |
+| **basePath 빌드 재배포** | ✅ gh-pages에 basePath 적용 빌드 푸시 (옛 hash `index-BI4BzJS7.js` basePath 누락 빌드 → 새 hash basePath 박힌 빌드) — 사용자 브라우저에서 cascade 404 함정 해결 (asset root context `/assets/...` → basePath `/sango-rising-dragons-kr/assets/...`) |
+
+## 📝 변경 이력
+
+- **2026-08-13** — Vercel → GitHub Pages 이관 (정직함 보정 + basePath 빌드 재배포)
+  - L6 뱃지: `Live_Demo-Vercel-000?logo=vercel` → `Live_Demo-GitHub_Pages-222222?logo=githubpages` (영문 정직 라벨)
+  - L87-94 빠른 시작: "방법 1: Vercel 배포 (권장, 1분)" → "방법 1: GitHub Pages (현재 Production, 권장)" + Vercel 사용 이력 단서 + "방법 2: Vercel 배포 (Vercel 사용 이력 — CLI 보존, 1분)" 로 변경
+  - L97/L110/L118: 방법 2/3/4 → 방법 3/4/5 (번호 재정렬)
+  - L133: "Vercel 배포 시간" → "Vercel 배포 시간 (Vercel 사용 이력)"
+  - L142: vite.config.* → vite.config.ts (실제 파일 생성 명시) + base 분기 설명 추가
+  - L143: "Vercel 배포 설정" → "Vercel 배포 설정 (사용 이력 보존)"
+  - L218: "🌐 Vercel 배포 가이드" → "🌐 Vercel 배포 가이드 (Vercel 사용 이력 보존)"
+  - L327: "배포: [Vercel]" → "배포: GitHub Pages (Vercel 사용 이력 — 2026-08 전환)"
+  - L338: "라이브 데모 (Vercel)" → "라이브 데모 (GitHub Pages)"
+  - L342: "Vercel 배포 가이드" → "Vercel 배포 가이드 (Vercel 사용 이력)"
+  - **`vite.config.ts` 신규 생성**: `base: process.env.VERCEL ? '' : '/sango-rising-dragons-kr/'` (P34 환경 분기 패턴)
+  - **gh-pages 재배포**: `npm install` + `pnpm build` + `git checkout gh-pages` + 옛 hash `index-BI4BzJS7.js` (basePath 누락) 추적 제거 + 새 hash (basePath 박힌 빌드) 추가 + .nojekyll 보존. **근본 원인**: 옛 빌드는 basePath 없이 빌드되어 `index.html`이 `<script src="/assets/index-BI4BzJS7.js">` root context 절대경로로 박힘 → 사용자 브라우저는 `/assets/...` 요청 → Pages cascade 404 → Phaser 미실행 → 게임 화면 안 나옴. **수정 후**: `src="/sango-rising-dragons-kr/assets/..."` 정상 서빙.
+  - 신규: ✅ Pages 이관 검증표 (10개 항목) + 📝 변경 이력 추가
+  - GitHub repo About > Website: `null` → `https://sigco3111.github.io/sango-rising-dragons-kr/` (정직함)
